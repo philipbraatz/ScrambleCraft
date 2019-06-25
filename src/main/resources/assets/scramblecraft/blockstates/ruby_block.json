@@ -1,0 +1,7 @@
+
+{
+  "variants": {
+    "normal": { "model": "scramblecraft:ruby_block" },
+    "inventory": { "model": "scramblecraft:ruby_block" }
+  }
+}

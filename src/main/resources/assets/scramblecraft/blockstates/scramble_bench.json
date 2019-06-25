@@ -1,0 +1,7 @@
+
+{
+  "variants": {
+    "normal": { "model": "scramblecraft:scramble_bench" },
+    "inventory": { "model": "scramblecraft:scramble_bench" }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "scramblecraft:scramble_furnace_off" },
+    "facing=south": { "model": "scramblecraft:scramble_furnace_off", "y": 180 },
+    "facing=west":  { "model": "scramblecraft:scramble_furnace_off", "y": 270 },
+    "facing=east":  { "model": "scramblecraft:scramble_furnace_off", "y": 90 }
+  }
+}

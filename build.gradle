@@ -1,0 +1,77 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven { url = "https://files.minecraftforge.net/maven" }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+    }
+}
+apply plugin: 'net.minecraftforge.gradle.forge'
+//Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
+
+sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+compileJava {
+    sourceCompatibility = targetCompatibility = '1.8'
+}
+
+final commitId
+
+if (hasProperty("grgit")) { // If there's a valid Git repository, get the latest commit ID
+    commitId = "${grgit.head().abbreviatedId}"
+} else { // Else fall back to NOGIT
+    commitId = "NOGIT"
+}
+
+version = "${mc_version}-${mod_version}-${commitId}"
+group = "${package_group}" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "${mod_name}"
+
+
+minecraft {
+    version = "${mc_version}-${forge_version}"
+    runDir = "run"
+
+    if (project.hasProperty('mappings_version'))
+        mappings = project.mappings_version
+}
+
+
+repositories {
+    maven {
+        // location of the maven that hosts JEI files
+        name = "Progwml6 maven"
+        url = "https://dvs1.progwml6.com/files/maven/"
+    }
+    maven {
+        // location of a maven mirror for JEI files, as a fallback
+        name = "ModMaven"
+        url = "https://modmaven.k-4u.nl"
+    }
+}
+
+dependencies {
+    // compile against the JEI API but do not include it at runtime
+    deobfProvided "mezz.jei:jei_${mc_version}:${jei_version}:api"
+    // at runtime, use the full JEI jar
+    runtime "mezz.jei:jei_${mc_version}:${jei_version}"
+}
+
+processResources {
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+                
+        // replace version and mcversion
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+        
+    // copy everything else except the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "scramblecraft:items/evil_apple",
+    "inventory": "scramblecraft:items/evil_apple"
+  }
+}

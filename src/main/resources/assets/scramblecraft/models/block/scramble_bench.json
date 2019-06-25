@@ -1,0 +1,9 @@
+
+{
+    "parent": "block/orientable",
+    "textures": {
+        "top": "scramblecraft:blocks/scramble_bench_top",
+        "front": "scramblecraft:blocks/scramble_bench_front",
+        "side": "scramblecraft:blocks/scramble_bench_side"
+    }
+}

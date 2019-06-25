@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+
+  "pattern":
+  [
+    "WW",
+    "WW"
+  ],
+
+  "key":
+  {
+    "W":
+    {
+      "item": "minecraft:planks",
+      "data": 0
+    }
+  },
+
+  "result":
+  {
+    "item": "scramblecraft:scramble_bench",
+    "count": 1
+  }
+}

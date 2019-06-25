@@ -1,0 +1,16 @@
+[
+{
+  "modid": "scramblecraft",
+  "name": "Scramble Craft",
+  "description": "Every time you craft something there is a chance the result will change.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Doorfail"],
+  "credits": "Choonster, DaRealTurtyWurty",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

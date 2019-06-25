@@ -1,0 +1,7 @@
+
+{
+  "variants": {
+    "normal": { "model": "scramblecraft:ruby_ore" },
+    "inventory": { "model": "scramblecraft:ruby_ore" }
+  }
+}
