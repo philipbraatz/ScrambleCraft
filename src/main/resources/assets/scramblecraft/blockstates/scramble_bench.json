@@ -1,7 +1,9 @@
 
 {
   "variants": {
-    "normal": { "model": "scramblecraft:scramble_bench" },
-    "inventory": { "model": "scramblecraft:scramble_bench" }
+    "facing=north": { "model": "scramblecraft:scramble_bench" },
+    "facing=south": { "model": "scramblecraft:scramble_bench", "y": 180 },
+    "facing=west":  { "model": "scramblecraft:scramble_bench", "y": 270 },
+    "facing=east":  { "model": "scramblecraft:scramble_bench", "y": 90 }
   }
 }

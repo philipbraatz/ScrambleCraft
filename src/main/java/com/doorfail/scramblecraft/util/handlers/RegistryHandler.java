@@ -35,20 +35,15 @@ public class RegistryHandler
     @SubscribeEvent
     public static void onModelRegister(ModelRegistryEvent event)
     {
+        ScrambleCraft.proxy.registerItemRenderer(Item.getItemFromBlock(ModBlocks.SCRAMBLE_BENCH), 0, "inventory");
         for(Item item : ModItems.ITEMS)
         {
-            if(item instanceof IHasModel)
-            {
-                ((IHasModel)item).registerModels();
-            }
+            ScrambleCraft.proxy.registerItemRenderer(item, 0, "inventory");
         }
 
         for(Block block : ModBlocks.BLOCKS)
         {
-            if(block instanceof IHasModel)
-            {
-                ((IHasModel)block).registerModels();
-            }
+            ScrambleCraft.proxy.registerItemRenderer(Item.getItemFromBlock(block), 0, "inventory");
         }
     }
 

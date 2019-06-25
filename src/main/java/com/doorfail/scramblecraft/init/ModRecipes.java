@@ -35,11 +35,12 @@ public class ModRecipes {
 
     private static int newIndex =-1;
     private static int oldIndex =-1;
+    public static int previousStackSize =222;//big stack number
 
 
     public static NonNullList<Ingredient> getItemsAsIngredient(List<Item> ingredients)
     {
-        NonNullList<Ingredient> converted =NonNullList.<Ingredient>withSize(ingredients.size(), Ingredient.EMPTY);
+        NonNullList<Ingredient> converted =NonNullList.withSize(ingredients.size(), Ingredient.EMPTY);
         int i =0;
         for (Item it:ingredients) {
             converted.set(i,Ingredient.fromItem(it));
@@ -63,7 +64,7 @@ public class ModRecipes {
         //removeRecipes(Blocks.CRAFTING_TABLE);
 
         ForgeRegistry<IRecipe> recipeRegistry = (ForgeRegistry<IRecipe>)ForgeRegistries.RECIPES;
-        ArrayList<IRecipe> recipes = Lists.newArrayList(recipeRegistry.getValues());
+        ArrayList<IRecipe> recipes = Lists.newArrayList(recipeRegistry.getValuesCollection());
         for (IRecipe r : recipes)
         {
             ItemStack output = r.getRecipeOutput();
@@ -84,7 +85,7 @@ public class ModRecipes {
 
     }
 
-    public static int getMatchIndex(List<Item> ingredients)
+    private static int getMatchIndex(List<Item> ingredients)
     {
         for (int i = 0; i <recipes.size() ; i++) {
             List<ResourceLocation> ingItems = new ArrayList<>();
@@ -122,7 +123,7 @@ public class ModRecipes {
 public static ItemStack tryToScramble(InventoryCrafting inventoryCrafting, List<Item> ingredient, boolean search)
 {
     ItemStack newResultStack;
-    boolean isSame = false;
+    boolean isSame;
     int overflow = 15;//number of times to try till failure
     int counter = 0;
 

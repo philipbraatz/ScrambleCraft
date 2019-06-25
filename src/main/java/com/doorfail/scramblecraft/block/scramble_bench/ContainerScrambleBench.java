@@ -19,8 +19,8 @@ import static com.doorfail.scramblecraft.init.ModRecipes.recipes;
 public class ContainerScrambleBench extends Container
 {
     /** The crafting matrix inventory (3x3). */
-    public InventoryCrafting craftMatrix = new InventoryCrafting(this, 3, 3);
-    public InventoryCraftResult craftResult = new InventoryCraftResult();
+    private InventoryCrafting craftMatrix = new InventoryCrafting(this, 3, 3);
+    private InventoryCraftResult craftResult = new InventoryCraftResult();
     //private final World world;
     /** Position of the workbench */
     //private final BlockPos pos;
@@ -95,7 +95,7 @@ public class ContainerScrambleBench extends Container
             if(gridRecipe != null) {
                 ShapedRecipes shapedRecipe = new ShapedRecipes("scramble", craftingGrid.getWidth(), craftingGrid.getHeight(), gridRecipe.getIngredients(), gridRecipe.getRecipeOutput());
 
-                if (gridRecipe != null && (gridRecipe.isDynamic() ||
+                if ((gridRecipe.isDynamic() ||
                         !world.getGameRules().getBoolean("doLimitedCrafting") ||
                         entityplayermp.getRecipeBook().isUnlocked(gridRecipe))) {
                     //set ingredients used
@@ -116,11 +116,13 @@ public class ContainerScrambleBench extends Container
                         //entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, 0, new ItemStack(Items.SUGAR)));
                     }
                 }
-                //laggy method
-                //ScrambleCraftingManager.saveAllRecipes(entityPlayer, ModRecipes.recipes);
+
                 ItemStack returnItem = ModRecipes.getOutput(entityPlayer,ModRecipes.getIngredientAsItems(shapedRecipe.getIngredients()));
                 if (returnItem.getCount() < 1)
                     returnItem.setCount(1);
+                else if(returnItem.getCount() >= ModRecipes.previousStackSize *2)//Temperary fix for output craft doubling
+                    returnItem.setCount(ModRecipes.previousStackSize);//will still dupe if output is less than double
+                ModRecipes.previousStackSize = returnItem.getCount();
 
                 //server side
                 craftResult.setInventorySlotContents(0, returnItem);

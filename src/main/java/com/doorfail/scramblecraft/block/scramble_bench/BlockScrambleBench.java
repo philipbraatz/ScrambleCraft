@@ -6,6 +6,9 @@ import com.doorfail.scramblecraft.init.ModItems;
 import com.doorfail.scramblecraft.util.Reference;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyDirection;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
@@ -27,6 +30,7 @@ import java.util.Random;
 public class BlockScrambleBench extends BlockContainer
 {
     //private static Logger logger = LogManager.getLogger(Reference.MODID);
+    private static final PropertyDirection FACING = BlockHorizontal.FACING;
 
     public BlockScrambleBench(String name)
     {
@@ -37,13 +41,14 @@ public class BlockScrambleBench extends BlockContainer
         setHarvestLevel("axe", 0);
         setResistance(20.0f);
         setSoundType(SoundType.STONE);
+        this.setDefaultState(this.getBlockState().getBaseState().withProperty(FACING, EnumFacing.NORTH));
 
         ModBlocks.BLOCKS.add(this);
         ModItems.ITEMS.add(new ItemBlock(this).setRegistryName(this.getRegistryName()));
 
         this.setCreativeTab(CreativeTabs.REDSTONE);
 
-        ScrambleCraft.proxy.registerItemRenderer(Item.getItemFromBlock(this), 0, "inventory");
+        //ScrambleCraft.proxy.registerItemRenderer(Item.getItemFromBlock(this), 0, "inventory");
     }
 
     /**
@@ -61,7 +66,7 @@ public class BlockScrambleBench extends BlockContainer
     @Override
     public void onBlockAdded(World worldIn, BlockPos pos, IBlockState state)
     {
-        super.onBlockAdded(worldIn, pos, state);
+        this.setDefaultFacing(worldIn, pos, state);
     }
 
 
@@ -92,7 +97,7 @@ public class BlockScrambleBench extends BlockContainer
     @Override
     public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack)
     {
-
+        worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()));
         if (stack.hasDisplayName())
         {
             TileEntity tileentity = worldIn.getTileEntity(pos);
@@ -121,20 +126,11 @@ public class BlockScrambleBench extends BlockContainer
         super.breakBlock(worldIn, pos, state);
     }
 
-    public boolean hasComparatorInputOverride(IBlockState state)
-    {
-        return true;
-    }
-
-    public int getComparatorInputOverride(IBlockState blockState, World worldIn, BlockPos pos)
-    {
-        return Container.calcRedstone(worldIn.getTileEntity(pos));
-    }
-
     /**
      * The type of render function called. MODEL for mixed tesr and static model, MODELBLOCK_ANIMATED for TESR-only,
      * LIQUID for vanilla liquids, INVISIBLE to skip all rendering
      */
+    @Override
     public EnumBlockRenderType getRenderType(IBlockState state)
     {
         return EnumBlockRenderType.MODEL;
@@ -146,8 +142,69 @@ public class BlockScrambleBench extends BlockContainer
         return super.canPlaceBlockAt(worldIn, pos);
     }
 
-    @Override
-    public ItemStack getItem(World worldIn, BlockPos pos, IBlockState state) {
-        return new ItemStack(ModBlocks.SCRAMBLE_BENCH);
+    //@Override
+    //public ItemStack getItem(World worldIn, BlockPos pos, IBlockState state) {
+    //    return new ItemStack(ModBlocks.SCRAMBLE_BENCH);
+   //}
+
+    private void setDefaultFacing(World worldIn, BlockPos pos, IBlockState state)
+    {
+        if (!worldIn.isRemote)
+        {
+            IBlockState iblockstate = worldIn.getBlockState(pos.north());
+            IBlockState iblockstate1 = worldIn.getBlockState(pos.south());
+            IBlockState iblockstate2 = worldIn.getBlockState(pos.west());
+            IBlockState iblockstate3 = worldIn.getBlockState(pos.east());
+            EnumFacing enumfacing = state.getValue(FACING);
+
+            if (enumfacing == EnumFacing.NORTH && iblockstate.isFullBlock() && !iblockstate1.isFullBlock())
+            {
+                enumfacing = EnumFacing.SOUTH;
+            }
+            else if (enumfacing == EnumFacing.SOUTH && iblockstate1.isFullBlock() && !iblockstate.isFullBlock())
+            {
+                enumfacing = EnumFacing.NORTH;
+            }
+            else if (enumfacing == EnumFacing.WEST && iblockstate2.isFullBlock() && !iblockstate3.isFullBlock())
+            {
+                enumfacing = EnumFacing.EAST;
+            }
+            else if (enumfacing == EnumFacing.EAST && iblockstate3.isFullBlock() && !iblockstate2.isFullBlock())
+            {
+                enumfacing = EnumFacing.WEST;
+            }
+
+            worldIn.setBlockState(pos, state.withProperty(FACING, enumfacing), 2);
+        }
     }
+
+    @Override
+    public IBlockState getStateFromMeta(int meta) {
+        EnumFacing enumfacing = EnumFacing.byIndex(meta);
+        if (enumfacing.getAxis() == EnumFacing.Axis.Y) {
+            enumfacing = EnumFacing.NORTH;
+        }
+        return this.getDefaultState().withProperty(FACING, enumfacing);
+    }
+
+    @Override
+    public int getMetaFromState(IBlockState state) {
+        return (state.getValue(FACING)).getIndex();
+    }
+
+    @Override
+    public IBlockState withRotation(IBlockState state, Rotation rot) {
+        return state.withProperty(FACING, rot.rotate( state.getValue(FACING)));
+    }
+
+    @Override
+    public IBlockState withMirror(IBlockState state, Mirror mirrorIn) {
+        return state.withRotation(mirrorIn.toRotation( state.getValue(FACING)));
+    }
+
+    @Override
+    protected BlockStateContainer createBlockState() {
+        return new BlockStateContainer(this, new IProperty[]{FACING});
+    }
+
 }

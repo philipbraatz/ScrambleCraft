@@ -2,6 +2,7 @@ package com.doorfail.scramblecraft.block.scramble_bench;
 
 import com.doorfail.scramblecraft.recipe.ScrambleBenchRecipe;
 import com.google.gson.*;
+import com.typesafe.config.ConfigException;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryCrafting;
@@ -19,6 +20,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import scala.tools.nsc.backend.icode.ExceptionHandlers;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
@@ -29,10 +31,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class ScrambleCraftingManager extends CraftingManager {
 
@@ -105,18 +104,18 @@ public class ScrambleCraftingManager extends CraftingManager {
                             }
                             catch (JsonParseException jsonparseexception)
                             {
-                                LOGGER.error("Parsing error loading recipe " + resourcelocation, (Throwable)jsonparseexception);
+                                LOGGER.error("Parsing error loading recipe " + resourcelocation, jsonparseexception);
                                 return false;
                             }
                             catch (IOException ioexception)
                             {
-                                LOGGER.error("Couldn't read recipe " + resourcelocation + " from " + path1, (Throwable)ioexception);
+                                LOGGER.error("Couldn't read recipe " + resourcelocation + " from " + path1, (ioexception);
                                 return false;
                             }
                         }
                         finally
                         {
-                            IOUtils.closeQuietly((Reader)bufferedreader);
+                            IOUtils.closeQuietly(bufferedreader);
                         }
                     }
                 }
@@ -129,13 +128,13 @@ public class ScrambleCraftingManager extends CraftingManager {
         }
         catch (IOException | URISyntaxException urisyntaxexception)
         {
-            LOGGER.error("Couldn't get a list of all recipe files", (Throwable)urisyntaxexception);
+            LOGGER.error("Couldn't get a list of all recipe files", urisyntaxexception);
             flag1 = false;
             return flag1;
         }
         finally
         {
-            IOUtils.closeQuietly((Closeable)filesystem);
+            IOUtils.closeQuietly(filesystem);
         }
 
         return flag1;
@@ -254,25 +253,34 @@ public class ScrambleCraftingManager extends CraftingManager {
         return listRecipes;
     }
 
-    private static boolean doesItemCraftResult(InventoryCrafting inventoryCrafting,Item parent,Item child)
-    {
-        if(child == null || parent ==null)
+    private static boolean doesItemCraftResult(InventoryCrafting inventoryCrafting,Item parent,Item child) {
+        if (child == null || parent == null ||
+            parent == Items.AIR || child == Items.AIR
+        )
             return false;
-        else if(parent == child)
+        else if (parent == child)
             return true;
 
         for (IRecipe irecipe : REGISTRY)//ALL items
         {
-            ItemStack testStack =irecipe.getCraftingResult(inventoryCrafting);
-            Item testItem = testStack.getItem();
-            if (testStack != ItemStack.EMPTY ||//not empty
-                testItem != Items.AIR ||//not empty
-                testItem == child//child is result
-            )
-                for (Ingredient ing : irecipe.getIngredients())//all ingredients
-                    for (ItemStack itemStack : ing.getMatchingStacks())//ingredient ugliness
-                        if (itemStack.getItem() == parent)//parent creates child
-                            return true;
+            if(irecipe.getRecipeOutput().getItem() ==Items.AIR)
+                return false;
+
+            try {
+                ItemStack testStack = irecipe.getCraftingResult(inventoryCrafting);
+
+                Item testItem = testStack.getItem();
+                if (testStack != ItemStack.EMPTY ||//not empty
+                        testItem != Items.AIR//not empty
+                        //child is never result
+                )
+                    for (Ingredient ing : irecipe.getIngredients())//all ingredients
+                        for (ItemStack itemStack : ing.getMatchingStacks())//ingredient ugliness
+                            if (itemStack.getItem() == parent)//parent creates child
+                                return true;
+            } catch (Exception e) {
+                throw new Error(irecipe.getRecipeOutput().getDisplayName() + " could not find crafting result");
+            }
         }
         return false;
     }
@@ -289,7 +297,7 @@ public class ScrambleCraftingManager extends CraftingManager {
             if (irecipe.matches(craftMatrix, worldIn))
                 return irecipe.getRemainingItems(craftMatrix);
 
-        NonNullList<ItemStack> nonnulllist = NonNullList.<ItemStack>withSize(craftMatrix.getSizeInventory(), ItemStack.EMPTY);
+        NonNullList<ItemStack> nonnulllist = NonNullList.withSize(craftMatrix.getSizeInventory(), ItemStack.EMPTY);
         for (int i = 0; i < nonnulllist.size(); ++i)
             nonnulllist.set(i, craftMatrix.getStackInSlot(i));
 

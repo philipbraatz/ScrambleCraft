@@ -13,7 +13,9 @@ import org.apache.logging.log4j.Logger;
 public class CommonProxy {
 
     private static Logger logger = LogManager.getLogger("scramblecraft");
-    public void registerItemRenderer(Item item, int meta, String id) {}
+    public void registerItemRenderer(Item item, int meta, String id) {
+
+    }
 
     @SubscribeEvent
     public void registerBlocks(RegistryEvent.Register<Block> event) {

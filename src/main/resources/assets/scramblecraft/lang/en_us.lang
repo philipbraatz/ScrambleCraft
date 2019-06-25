@@ -1,4 +1,4 @@
-//Items
+
 item.ruby.name=Ruby
 item.obsidian_ingot.name=Obsidian Ingot
 item.obsidian_nugget.name=Obsidian Nugget
@@ -15,10 +15,8 @@ item.diamond_bow.name=Diamond Bow
 item.diamond_arrow.name=Diamond Arrow
 item.diamond_fishing_rod.name=Diamond Fishing Rod
 
-//Fluids
 fluid.white_water=White Water
 
-//Blocks
 tile.ruby_block.name=Block of Ruby
 tile.ruby_ore.name=Ruby Ore
 tile.silver_block.name=Silver Block
@@ -26,33 +24,27 @@ tile.random_block.name=Random Block
 tile.candy_cane.name=Candy Cane
 tile.silver_chest.name=Silver Chest
 tile.glass_door.name=Glass Door
-tile.silver_chest.name=Silver Chest
 tile.scramble_chest_na.name=Scramble Chest NA
 tile.scramble_furnace_off.name=Scramble Furnace
 tile.scramble_furnace_on.name=Lit Scramble Furnace
 tile.scramble_bench.name=Scramble Bench
 
-//Containers
 container.sliver_chest=Silver Chest
 container.silver_chest_na=Silver Chest NA
 container.scramble_furnace=Furnace
 container.scramble_bench=Crafting Bench
 
-//Tools
 item.ruby_sword.name=Ruby Sword
 item.ruby_shovel.name=Ruby Shovel
 item.ruby_pickaxe.name=Ruby Pickaxe
 item.ruby_axe.name=Ruby Axe
 item.ruby_hoe.name=Ruby Hoe
 
-//Armor
 item.ruby_helmet.name=Ruby Helmet
 item.ruby_chestplate.name=Ruby Chestplate
 item.ruby_leggings.name=Ruby Leggings
 item.ruby_boots.name=Ruby Boots
 
-//Food
 item.evil_apple.name=Evil Apple
 
-//Tabs
 itemGroup.tutorialmodtab=Tutorial Tab
