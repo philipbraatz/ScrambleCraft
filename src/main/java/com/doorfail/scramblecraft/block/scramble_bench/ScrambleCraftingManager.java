@@ -109,7 +109,7 @@ public class ScrambleCraftingManager extends CraftingManager {
                             }
                             catch (IOException ioexception)
                             {
-                                LOGGER.error("Couldn't read recipe " + resourcelocation + " from " + path1, (ioexception);
+                                LOGGER.error("Couldn't read recipe " + resourcelocation + " from " + path1, (ioexception));
                                 return false;
                             }
                         }

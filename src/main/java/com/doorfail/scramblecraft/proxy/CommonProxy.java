@@ -1,6 +1,6 @@
 package com.doorfail.scramblecraft.proxy;
 
-import com.doorfail.scramblecraft.util.handlers.RegistryHandler;
+import com.doorfail.scramblecraft.handlers.RegistryHandler;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.event.RegistryEvent;

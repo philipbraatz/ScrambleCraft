@@ -37,6 +37,6 @@ public class GUIScrambleBench extends GuiContainer {
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY)
     {
         this.fontRenderer.drawString(this.te.getDisplayName().getUnformattedText(), 8, 6, 000000);
-        this.fontRenderer.drawString(this.playerInv.getDisplayName().getUnformattedText(), 8, this.ySize - 92, 000000);
+        this.fontRenderer.drawString(this.playerInv.getDisplayName().getUnformattedText(), 8, 72, 000000);
     }
 }

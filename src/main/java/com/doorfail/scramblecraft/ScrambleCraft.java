@@ -1,9 +1,7 @@
 package com.doorfail.scramblecraft;
 
-
-import com.doorfail.scramblecraft.event.TestEventHandler;
 import com.doorfail.scramblecraft.init.ModRecipes;
-import com.doorfail.scramblecraft.event.CraftingEventHandler;
+import com.doorfail.scramblecraft.handlers.CraftingEventHandler;
 import com.doorfail.scramblecraft.util.Reference;
 import com.doorfail.scramblecraft.proxy.CommonProxy;
 import com.google.common.collect.Maps;
@@ -12,6 +10,7 @@ import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLInterModComms;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
@@ -32,7 +31,6 @@ public class ScrambleCraft
     public static ScrambleCraft instance;
 
     public static CraftingEventHandler craftEvent = new CraftingEventHandler();
-    public static TestEventHandler testEvent = new TestEventHandler();
 
     private static Logger logger = LogManager.getLogger(MODID);
 
@@ -41,8 +39,9 @@ public class ScrambleCraft
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
-        System.out.println("system Print printing");
-        logger.info("Pre init");
+        //System.out.println("system Print printing");
+        //logger.info("Pre init");
+        FMLInterModComms.sendMessage("waila","register","com.doorfail.scramblecraft.mod.waila.ScrambleCraftWailaPlugin.onWailaCall");
         proxy.preInit(event);
     }
 
@@ -64,7 +63,6 @@ public class ScrambleCraft
     public void postInit(FMLPostInitializationEvent event)
     {
         craftEvent.init();
-        testEvent.init(logger);
 
         logger.info("postInit");
         proxy.postInit(event);

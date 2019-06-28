@@ -34,13 +34,15 @@ public class BlockScrambleBench extends BlockContainer
 
     public BlockScrambleBench(String name)
     {
-        super(Material.ROCK);
+
+        super(Material.WOOD);
+        setSoundType(SoundType.WOOD);
         setTranslationKey(name);
         setRegistryName(name);
         setHardness(2.0f);
         setHarvestLevel("axe", 0);
         setResistance(20.0f);
-        setSoundType(SoundType.STONE);
+
         this.setDefaultState(this.getBlockState().getBaseState().withProperty(FACING, EnumFacing.NORTH));
 
         ModBlocks.BLOCKS.add(this);

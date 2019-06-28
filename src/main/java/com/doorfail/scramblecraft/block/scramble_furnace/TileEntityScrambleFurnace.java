@@ -171,6 +171,7 @@ public class TileEntityScrambleFurnace extends TileEntityLockable implements ITi
         return inventory.getField(0) > 0;
     }
 
+    @Override
     public void update()
     {
         boolean flag = this.isBurning();

@@ -9,6 +9,7 @@ import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntityLockableLoot;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -19,7 +20,7 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
 {
     private NonNullList<ItemStack> scrambleBenchItemStacks = NonNullList.<ItemStack>withSize(10, ItemStack.EMPTY);
     private String customName;
-    public int numPlayersUsing;
+    public int numPlayersUsing=0;
 
     @Override
     public int getSizeInventory()
@@ -102,10 +103,11 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
         return 64;
     }
 
-
+    @Override
     public void update()
     {
-        if (!this.world.isRemote )//&& this.numPlayersUsing != 0 )
+
+        if (false)//!this.world.isRemote && this.numPlayersUsing > 0 )
         {
             this.numPlayersUsing = 0;
             float f = 5.0F;
@@ -117,18 +119,15 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
                         ++this.numPlayersUsing;
                 }
             }
-        }
 
-        if (!this.world.isRemote)
-        {
-            if (!this.world.isRemote && this.numPlayersUsing != 0 && (pos.getX() + pos.getY() + pos.getZ()) % 200 == 0)
+            if (this.numPlayersUsing != 0 && (pos.getX() + pos.getY() + pos.getZ()) % 200 == 0)
             {
                 this.numPlayersUsing = 0;
-                float f = 5.0F;
+                f = 5.0F;
 
                 for (EntityPlayer entityplayer : this.world.getEntitiesWithinAABB(EntityPlayer.class, new AxisAlignedBB((double) ((float) pos.getX() - 5.0F), (double) ((float) pos.getY() - 5.0F), (double) ((float) pos.getZ() - 5.0F), (double) ((float) (pos.getX() + 1) + 5.0F), (double) ((float) (pos.getY() + 1) + 5.0F), (double) ((float) (pos.getZ() + 1) + 5.0F))))
                     if (entityplayer.openContainer instanceof ContainerScrambleBench)
-                        if (((ContainerScrambleBench) entityplayer.openContainer).getInventory() == this.scrambleBenchItemStacks)
+                        if (( entityplayer.openContainer).getInventory() == this.scrambleBenchItemStacks)
                             ++this.numPlayersUsing;
             }
         }
@@ -201,9 +200,7 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
         {
             Item item = stack.getItem();
             if(item != Items.WATER_BUCKET && item != Items.BUCKET)
-            {
                 return false;
-            }
         }
         return true;
     }
@@ -230,5 +227,24 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
     public <T> T getCapability(net.minecraftforge.common.capabilities.Capability<T> capability, @javax.annotation.Nullable net.minecraft.util.EnumFacing facing)
     {
         return super.getCapability(capability, facing);
+    }
+
+    public void readFromNBT(NBTTagCompound compound)
+    {
+        super.readFromNBT(compound);
+        ItemStackHelper.loadAllItems(compound, this.scrambleBenchItemStacks);
+
+        if (compound.hasKey("CustomName", 8))
+            this.customName = compound.getString("CustomName");
+    }
+
+    public NBTTagCompound writeToNBT(NBTTagCompound compound)
+    {
+        ItemStackHelper.saveAllItems(compound, this.scrambleBenchItemStacks);
+
+        if (this.hasCustomName())
+            compound.setString("CustomName", this.customName);
+
+        return compound;
     }
 }
