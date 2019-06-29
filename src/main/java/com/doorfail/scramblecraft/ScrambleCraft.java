@@ -23,7 +23,7 @@ import java.util.Map;
 import static com.doorfail.scramblecraft.util.Reference.MODID;
 
 
-@Mod(modid = MODID, name = Reference.NAME, version = Reference.VERSION)
+@Mod(modid = MODID, name = Reference.NAME, version = Reference.VERSION, acceptedMinecraftVersions = Reference.MCVERSION)
 public class ScrambleCraft
 {
 

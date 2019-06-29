@@ -19,7 +19,7 @@ import static com.doorfail.scramblecraft.init.ModRecipes.recipes;
 public class ContainerScrambleBench extends Container
 {
     /** The crafting matrix inventory (3x3). */
-    private InventoryCrafting craftMatrix = new InventoryCrafting(this, 3, 3);
+    public InventoryCrafting craftMatrix = new InventoryCrafting(this, 3, 3);
     private InventoryCraftResult craftResult = new InventoryCraftResult();
     //private final World world;
     /** Position of the workbench */
