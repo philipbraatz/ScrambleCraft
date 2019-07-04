@@ -1,10 +1,10 @@
 package com.doorfail.scramblecraft.handlers;
 
 import com.doorfail.scramblecraft.ScrambleCraft;
-import com.doorfail.scramblecraft.recipe.VanillaFurnaceRecipes;
 import com.doorfail.scramblecraft.init.ModBlocks;
 import com.doorfail.scramblecraft.init.ModItems;
 import com.doorfail.scramblecraft.init.ModOreDictionary;
+import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
 import com.doorfail.scramblecraft.world.ModWorldGen;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -63,7 +63,7 @@ public class RegistryHandler
     public static void initRegistries()
     {
         NetworkRegistry.INSTANCE.registerGuiHandler(ScrambleCraft.instance, new GUIHandler());
-        VanillaFurnaceRecipes.init();
+        //VanillaFurnaceRecipes.init();
         ModOreDictionary.registerOres();
     }
 

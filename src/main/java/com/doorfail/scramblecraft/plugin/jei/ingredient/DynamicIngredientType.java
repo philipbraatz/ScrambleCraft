@@ -1,7 +1,6 @@
-package com.doorfail.scramblecraft.mod.jei.ingredient;
+package com.doorfail.scramblecraft.plugin.jei.ingredient;
 
 import mezz.jei.api.recipe.IIngredientType;
-import net.minecraft.item.ItemStack;
 
 public class DynamicIngredientType implements IIngredientType<DynamicItemStack> {
     @Override

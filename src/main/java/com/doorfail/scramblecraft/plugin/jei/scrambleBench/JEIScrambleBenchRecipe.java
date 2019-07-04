@@ -1,11 +1,9 @@
-package com.doorfail.scramblecraft.mod.jei.scrambleBench;
+package com.doorfail.scramblecraft.plugin.jei.scrambleBench;
 
-import com.doorfail.scramblecraft.mod.jei.ingredient.DynamicItemStack;
-import com.doorfail.scramblecraft.recipe.ScrambleBenchRecipes;
+import com.doorfail.scramblecraft.plugin.jei.ingredient.DynamicItemStack;
 import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.recipe.IRecipeWrapper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.item.ItemStack;
 
 import java.util.List;
 
@@ -29,7 +27,7 @@ public class JEIScrambleBenchRecipe implements IRecipeWrapper {
     @Override
     public void drawInfo(Minecraft minecraft,int recipeWidth, int recipeHeight, int mouseX, int mouseY)
     {
-        ScrambleBenchRecipes recipes = ScrambleBenchRecipes.instance();
+        //ScrambleBenchRecipes recipes = ScrambleBenchRecipes.instance();
 
     }
 }

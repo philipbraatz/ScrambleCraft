@@ -1,4 +1,4 @@
-package com.doorfail.scramblecraft.mod.waila;
+package com.doorfail.scramblecraft.plugin.waila;
 
 import mcp.mobius.waila.api.IWailaRegistrar;
 

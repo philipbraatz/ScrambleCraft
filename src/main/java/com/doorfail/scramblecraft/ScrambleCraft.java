@@ -2,6 +2,7 @@ package com.doorfail.scramblecraft;
 
 import com.doorfail.scramblecraft.init.ModRecipes;
 import com.doorfail.scramblecraft.handlers.CraftingEventHandler;
+import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
 import com.doorfail.scramblecraft.util.Reference;
 import com.doorfail.scramblecraft.proxy.CommonProxy;
 import com.google.common.collect.Maps;
@@ -41,7 +42,7 @@ public class ScrambleCraft
     public void preInit(FMLPreInitializationEvent event) {
         //System.out.println("system Print printing");
         //logger.info("Pre init");
-        FMLInterModComms.sendMessage("waila","register","com.doorfail.scramblecraft.mod.waila.ScrambleCraftWailaPlugin.onWailaCall");
+        FMLInterModComms.sendMessage("waila","register","com.doorfail.scramblecraft.plugin.waila.ScrambleCraftWailaPlugin.onWailaCall");
         proxy.preInit(event);
     }
 
@@ -55,7 +56,8 @@ public class ScrambleCraft
         int option1  = config.get("test","enableThisConfig",34).getInt();
         logger.info(option1);
 
-        ModRecipes.init();
+        //ModRecipes.init();
+        ModRecipeRegistry.init();
         proxy.init(event);
     }
 

@@ -1,4 +1,4 @@
-package com.doorfail.scramblecraft.mod.jei.scrambleBench;
+package com.doorfail.scramblecraft.plugin.jei.scrambleBench;
 
 import com.doorfail.scramblecraft.util.Reference;
 import mezz.jei.api.IGuiHelper;

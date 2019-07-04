@@ -1,11 +1,8 @@
-package com.doorfail.scramblecraft.mod.jei.ingredient;
+package com.doorfail.scramblecraft.plugin.jei.ingredient;
 
 import com.doorfail.scramblecraft.util.Reference;
 import mezz.jei.api.ingredients.IIngredientHelper;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.text.TextFormatting;
 
 import javax.annotation.Nullable;
 import java.awt.*;

@@ -1,10 +1,13 @@
 package com.doorfail.scramblecraft.block.scramble_furnace;
 
+import com.doorfail.scramblecraft.init.ModBlocks;
+import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
 import com.doorfail.scramblecraft.recipe.ScrambleFurnaceRecipes;
 import com.doorfail.scramblecraft.block.scramble_furnace.slot.ScrambleFurnaceFuelSlot;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
@@ -21,6 +24,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityLockable;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -31,6 +35,9 @@ import net.minecraft.util.datafix.walkers.ItemStackDataLists;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TileEntityScrambleFurnace extends TileEntityLockable implements ITickable, ISidedInventory
 {
@@ -43,6 +50,9 @@ public class TileEntityScrambleFurnace extends TileEntityLockable implements ITi
     private int cookTime;
     private int totalCookTime;
     private String furnaceCustomName;
+
+    private EntityPlayer lastUser;//TODO save to nbt
+    private boolean lockPlayer =false;//dont save to nbt
 
     @Override
     public int getSizeInventory()
@@ -236,7 +246,7 @@ public class TileEntityScrambleFurnace extends TileEntityLockable implements ITi
             if (flag != this.isBurning())
             {
                 flag1 = true;
-                ScrambleFurnace.setState(this.isBurning(), this.world, this.pos);
+                BlockScrambleFurnace.setState(this.isBurning(), this.world, this.pos);
             }
         }
 
@@ -253,13 +263,24 @@ public class TileEntityScrambleFurnace extends TileEntityLockable implements ITi
 
     private boolean canSmelt()
     {
-        if (((ItemStack)this.furnaceItemStacks.get(0)).isEmpty())
+        if ((this.furnaceItemStacks.get(0)).isEmpty() ||
+            lastUser == null)
         {
             return false;
         }
         else
         {
-            ItemStack itemstack = ScrambleFurnaceRecipes.instance().getCookingResult(this.furnaceItemStacks.get(0));
+            List<ItemStack> inputs =new ArrayList<>();
+            inputs.add(this.furnaceItemStacks.get(SLOTS_TOP[0]));
+            List<ItemStack> checkResult =ModRecipeRegistry.checkResult(
+                    inputs,
+                    lastUser.getUniqueID(),
+                    ModBlocks.SCRAMBLE_FURNACE_OFF.getRegistryName());
+            ItemStack itemstack;
+            if(checkResult.size() == 0)
+                return false;
+            else
+                itemstack = checkResult.get(0);
 
             if (itemstack.isEmpty())
             {
@@ -294,7 +315,9 @@ public class TileEntityScrambleFurnace extends TileEntityLockable implements ITi
         if (this.canSmelt())
         {
             ItemStack itemstack = this.furnaceItemStacks.get(0);
-            ItemStack itemstack1 = ScrambleFurnaceRecipes.instance().getCookingResult(itemstack);
+            List<ItemStack> stacked =new ArrayList<>();
+            stacked.add(itemstack);
+            ItemStack itemstack1 = ModRecipeRegistry.craftResult(stacked,lastUser.getUniqueID(),ModBlocks.SCRAMBLE_FURNACE_OFF.getRegistryName()).get(0);
             ItemStack itemstack2 = this.furnaceItemStacks.get(2);
 
             if (itemstack2.isEmpty())
@@ -422,18 +445,29 @@ public class TileEntityScrambleFurnace extends TileEntityLockable implements ITi
         }
         else
         {
+            lastUser = player;
             return player.getDistanceSq((double)this.pos.getX() + 0.5D, (double)this.pos.getY() + 0.5D, (double)this.pos.getZ() + 0.5D) <= 64.0D;
         }
     }
 
+    //Dont switch recipes till first user leaves screen
+    @Override
     public void openInventory(EntityPlayer player)
     {
-
+        if(!lockPlayer) {
+            lastUser = player;
+            lockPlayer =true;
+        }
     }
 
+    //allow other users to switch recipe after player leaves screen
+    @Override
     public void closeInventory(EntityPlayer player)
     {
-
+        if(lockPlayer && player.getUniqueID() == lastUser.getUniqueID())
+        {
+            lockPlayer =false;
+        }
     }
 
     @Override

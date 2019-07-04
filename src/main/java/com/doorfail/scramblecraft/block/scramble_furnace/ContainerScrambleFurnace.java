@@ -114,7 +114,7 @@ public class ContainerScrambleFurnace extends Container
             }
             else if (index != 1 && index != 0)
             {
-                if (!ScrambleFurnaceRecipes.instance().getCookingResult(itemstack1).isEmpty())
+                if (!ScrambleFurnaceRecipes.instance().getResult(itemstack1).isEmpty())
                 {
                     if (!this.mergeItemStack(itemstack1, 0, 1, false))
                     {

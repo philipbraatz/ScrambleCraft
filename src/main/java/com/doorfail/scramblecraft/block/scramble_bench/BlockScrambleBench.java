@@ -3,6 +3,7 @@ package com.doorfail.scramblecraft.block.scramble_bench;
 import com.doorfail.scramblecraft.ScrambleCraft;
 import com.doorfail.scramblecraft.init.ModBlocks;
 import com.doorfail.scramblecraft.init.ModItems;
+import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
 import com.doorfail.scramblecraft.util.Reference;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
@@ -10,9 +11,11 @@ import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.InventoryHelper;
 import net.minecraft.item.Item;
@@ -78,6 +81,11 @@ public class BlockScrambleBench extends BlockContainer
     @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
     {
+        //RECIPES
+        ModRecipeRegistry.addDefaultRecipe(
+                Minecraft.getMinecraft().player.getUniqueID(),
+                new ItemStack( Blocks.GRASS),new ItemStack(Blocks.DIRT),
+                ModBlocks.SCRAMBLE_BENCH.getRegistryName());
         playerIn.openGui(ScrambleCraft.instance, Reference.GUI_SCRAMBLE_BENCH, worldIn, pos.getX(), pos.getY(), pos.getZ());
         return true;
     }

@@ -1,4 +1,4 @@
-package com.doorfail.scramblecraft.mod.jei;
+package com.doorfail.scramblecraft.plugin.jei;
 
 import com.doorfail.scramblecraft.util.Reference;
 

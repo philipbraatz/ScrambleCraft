@@ -32,7 +32,7 @@ public class GUIScrambleBench extends GuiContainer implements IRecipeShownListen
 
     public GUIScrambleBench(InventoryPlayer playerInv, TileEntityScrambleBench benchInv, EntityPlayer player)
     {
-        super(new ContainerScrambleBench(playerInv, benchInv, player));
+        super(new ContainerScrambleBench(player.world, player.getPosition(),benchInv,player));
         this.playerInv = playerInv;
         this.te = benchInv;
 

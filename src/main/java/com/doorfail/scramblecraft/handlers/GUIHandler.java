@@ -20,7 +20,7 @@ public class GUIHandler implements IGuiHandler
         if(ID == Reference.GUI_SCRAMBLE_FURNACE)
             return new ContainerScrambleFurnace(player.inventory, (TileEntityScrambleFurnace) world.getTileEntity(new BlockPos(x, y, z)));
         else if(ID == Reference.GUI_SCRAMBLE_BENCH)
-            return new ContainerScrambleBench(player.inventory, (TileEntityScrambleBench) world.getTileEntity(new BlockPos(x, y, z)),player);
+            return new ContainerScrambleBench(world,new BlockPos(x,y,z), (TileEntityScrambleBench) world.getTileEntity(new BlockPos(x, y, z)),player);
         return null;
     }
 

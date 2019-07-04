@@ -14,8 +14,8 @@ import net.minecraft.item.ItemStack;
 public class ScrambleFurnaceRecipes
 {
     private static final ScrambleFurnaceRecipes COOKING_BASE = new ScrambleFurnaceRecipes();
-    private final Map<ItemStack, ItemStack> cookingList = Maps.<ItemStack, ItemStack>newHashMap();
-    private final Map<ItemStack, Float> experienceList = Maps.<ItemStack, Float>newHashMap();
+    private static Map<ItemStack, ItemStack> cookingList = Maps.newHashMap();
+    private static Map<ItemStack, Float> experienceList = Maps.newHashMap();
 
     public static ScrambleFurnaceRecipes instance()
     {
@@ -24,22 +24,22 @@ public class ScrambleFurnaceRecipes
 
     private ScrambleFurnaceRecipes()
     {
-        this.addCookingRecipeForBlock(ModBlocks.RUBY_ORE, new ItemStack(ModItems.RUBY), 0.3f);
+        this.addRecipe(ModBlocks.RUBY_ORE, new ItemStack(ModItems.RUBY), 0.3f);
     }
 
-    public void addCookingRecipeForBlock(Block input, ItemStack stack, float experience)
+    public void addRecipe(Block input, ItemStack stack, float experience)
     {
-        this.addCooking(Item.getItemFromBlock(input), stack, experience);
+        this.addRecipe(Item.getItemFromBlock(input), stack, experience);
     }
 
-    public void addCooking(Item input, ItemStack stack, float experience)
+    public void addRecipe(Item input, ItemStack stack, float experience)
     {
-        this.addCookingRecipe(new ItemStack(input, 1, 32767), stack, experience);
+        this.addRecipe(new ItemStack(input, 1, 32767), stack, experience);
     }
 
-    public void addCookingRecipe(ItemStack input, ItemStack stack, float experience)
+    public void addRecipe(ItemStack input, ItemStack stack, float experience)
     {
-        if (getCookingResult(input) != ItemStack.EMPTY)
+        if (getResult(input) != ItemStack.EMPTY)
         {
             net.minecraftforge.fml.common.FMLLog.log.info("Ignored cooking recipe with conflicting input: {} = {}", input, stack); return;
         }
@@ -47,7 +47,7 @@ public class ScrambleFurnaceRecipes
         this.experienceList.put(stack, Float.valueOf(experience));
     }
 
-    public ItemStack getCookingResult(ItemStack stack)
+    public ItemStack getResult(ItemStack stack)
     {
         for (Entry<ItemStack, ItemStack> entry : this.cookingList.entrySet())
         {

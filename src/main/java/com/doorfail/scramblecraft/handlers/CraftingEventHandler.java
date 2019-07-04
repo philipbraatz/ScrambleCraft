@@ -1,12 +1,21 @@
 package com.doorfail.scramblecraft.handlers;
 
+import com.doorfail.scramblecraft.init.ModBlocks;
 import com.doorfail.scramblecraft.init.ModRecipes;
+import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
 import com.doorfail.scramblecraft.util.Reference;
+import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.SPacketSetSlot;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.common.asm.transformers.ItemStackTransformer;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
@@ -50,17 +59,24 @@ public class CraftingEventHandler {
                 for (int i = 0; i < event.craftMatrix.getSizeInventory(); i++) {
                     ingredients.add(event.craftMatrix.getStackInSlot(i).getItem());
                 }
-                List<Item> ingredientClean = new ArrayList<>();
+                List<ItemStack> ingredientClean = new ArrayList<>();
                 for (Item itemStack : ingredients) {
                     if (itemStack != Items.AIR)
-                        ingredientClean.add(itemStack);
+                        ingredientClean.add(new ItemStack(itemStack));
                 }
 
                 //if(!ModRecipes.ingredientInputs.contains(ingredients))
                 //    ModRecipes.addRecipe(ingredients,new ItemStack(event.crafting.getItem()));
 
-                ModRecipes.randomizeRecipe(event.craftMatrix, event.player, ingredientClean);
 
+                //Get the crafting block being looked at
+                RayTraceResult mop =  Minecraft.getMinecraft().objectMouseOver;
+                if(mop != null) {
+                    //EnumFacing blockHitSide = mop.sideHit;
+                    TileEntity blockLookingAt = event.player.world.getTileEntity(mop.getBlockPos());
+
+                    ModRecipeRegistry.randomizeRecipe(event.craftMatrix, event.player, event.player.world.getTileEntity(mop.getBlockPos()).getBlockType().getRegistryName(), ingredientClean);
+                }
                 //logger.info("Randomized Recipe");
             }
         }

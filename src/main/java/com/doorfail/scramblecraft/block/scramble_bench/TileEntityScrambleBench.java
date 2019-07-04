@@ -208,7 +208,7 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
     @Override
     public Container createContainer(InventoryPlayer playerInventory, EntityPlayer playerIn)
     {
-        return new ContainerScrambleBench(playerInventory,(TileEntityScrambleBench) world.getTileEntity(this.pos),playerIn);
+        return new ContainerScrambleBench(playerIn.world,this.pos,(TileEntityScrambleBench) world.getTileEntity(this.pos),playerIn);
     }
 
     @Override

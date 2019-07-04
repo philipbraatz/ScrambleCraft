@@ -1,32 +1,33 @@
-package com.doorfail.scramblecraft.mod.jei.scrambleBench;
+package com.doorfail.scramblecraft.plugin.jei.scrambleBench;
 
-import com.doorfail.scramblecraft.init.ModRecipes;
-import com.doorfail.scramblecraft.mod.jei.ingredient.DynamicItemStack;
-import com.doorfail.scramblecraft.recipe.ScrambleBenchRecipe;
-import com.doorfail.scramblecraft.recipe.ScrambleBenchRecipes;
+import com.doorfail.scramblecraft.init.ModBlocks;
+import com.doorfail.scramblecraft.plugin.jei.ingredient.DynamicItemStack;
+import com.doorfail.scramblecraft.recipe.ModRecipe;
+import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
 import mezz.jei.api.IJeiHelpers;
 import mezz.jei.api.recipe.IStackHelper;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class ScrambleBenchRecipeMaker {
-    public static List<JEIScrambleBenchRecipe> getRecipes(IJeiHelpers helpers)
+    public static List<JEIScrambleBenchRecipe> getRecipes(IJeiHelpers helpers, UUID playerId)
     {
         IStackHelper stackHelper = helpers.getStackHelper();
-        ScrambleBenchRecipes instance = ScrambleBenchRecipes.instance();
+        //ScrambleBenchRecipes instance = ScrambleBenchRecipes.instance();
         //Table<ItemStack,ItemStack,ItemStack> recipes = instance.getConstantRecipes();
         List<JEIScrambleBenchRecipe> jeiRecipes =new ArrayList<>();
         List<DynamicItemStack> ingredients = new ArrayList<>();
 
-        for (ScrambleBenchRecipe sbr: ModRecipes.recipes) {
-            for (Item it: sbr.inputItems)
+        List<ModRecipe> recipes = ModRecipeRegistry.getRecipeList(playerId, ModBlocks.SCRAMBLE_BENCH.getRegistryName());
+        for (ModRecipe sbr:recipes ) {
+            for (ItemStack it: sbr.checkResult())
                 ingredients.add(new DynamicItemStack(it));
 
-            jeiRecipes.add(new JEIScrambleBenchRecipe(ingredients,new DynamicItemStack( sbr.outputItemStack)));
+            jeiRecipes.add(new JEIScrambleBenchRecipe(ingredients,new DynamicItemStack( sbr.checkResult().get(0))));
         }
 
         //debug recipe
