@@ -2,30 +2,20 @@ package com.doorfail.scramblecraft.block.scramble_bench;
 
 
 import com.doorfail.scramblecraft.init.ModBlocks;
-import com.doorfail.scramblecraft.init.ModRecipes;
 import com.doorfail.scramblecraft.recipe.ModCraftingManager;
 import com.doorfail.scramblecraft.recipe.ModRecipe;
 import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.ShapedRecipes;
 import net.minecraft.network.play.server.SPacketSetSlot;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
-
-import static com.doorfail.scramblecraft.init.ModRecipes.*;
 import static com.doorfail.scramblecraft.util.Reference.MODID;
 
 public class ContainerScrambleBench extends Container
@@ -48,9 +38,9 @@ public class ContainerScrambleBench extends Container
         this.pos =block;
         this.player = player;
         this.benchInventory = benchInventory;
-        if(recipes.size() <= 0) {
-            ModCraftingManager.loadRecipes(this.player, ModBlocks.SCRAMBLE_BENCH.getRegistryName());
-        }
+        //if(recipes.size() <= 0) {
+        //    ModCraftingManager.loadRecipes(this.player, ModBlocks.SCRAMBLE_BENCH.getRegistryName());
+        //}
 
 
         //output
@@ -98,6 +88,9 @@ public class ContainerScrambleBench extends Container
         {
             //this.clearContainer(playerIn, playerIn.world, this.craftMatrix);
         }
+        //TODO foreach item in matrix
+        //return Items to players inventory or drop them
+
         benchInventory.closeInventory(playerIn);
         super.onContainerClosed(playerIn);
     }
@@ -117,7 +110,7 @@ public class ContainerScrambleBench extends Container
         if (!world.isRemote)
         {
             EntityPlayerMP entityplayermp = (EntityPlayerMP)entityPlayer;
-            ModRecipe  gridRecipe = ModCraftingManager.findMatchingRecipe(entityPlayer.getUniqueID(),ModBlocks.SCRAMBLE_BENCH.getRegistryName(),craftMatrix);
+            ModRecipe  gridRecipe = ModCraftingManager.findMatchingRecipe(entityPlayer.getUniqueID(), ModBlocks.SCRAMBLE_BENCH.getRegistryName(), craftMatrix);
             if(gridRecipe.checkResult().size() != 0)
             {
                 //ShapedRecipes shapedRecipe = new ShapedRecipes("scramble", craftingGrid.getWidth(), craftingGrid.getHeight(), gridRecipe.getIngredients(), gridRecipe.getRecipeOutput());
@@ -131,25 +124,27 @@ public class ContainerScrambleBench extends Container
                         craftResult.setRecipeUsed(gridRecipe);
 
                         //add new
-                        if (!recipeExists(entityPlayer.getUniqueID(),
+                        if (!ModRecipeRegistry.recipeExists(entityPlayer.getUniqueID(),
                                 ModBlocks.SCRAMBLE_BENCH.getRegistryName(),
                                 ModRecipeRegistry.getIngredientAsItemStacks(gridRecipe.getIngredients())) &&
                                 gridRecipe.getRecipeOutput().getItem() != Items.AIR) {
                             ItemStack wholeItem = gridRecipe.getRecipeOutput();
                             if (wholeItem.getCount() < 1)
                                 wholeItem.setCount(1);
+
                             ModRecipeRegistry.addRecipe(
                                     entityPlayer.getUniqueID(),
-                                    ModRecipeRegistry.getIngredientAsItemStacks(gridRecipe.getIngredients()),
-                                    wholeItem,
-                                    ModBlocks.SCRAMBLE_BENCH.getRegistryName());
+                                    ModBlocks.SCRAMBLE_BENCH.getRegistryName(),
+                                    wholeItem, ModRecipeRegistry.getIngredientAsItemStacks(gridRecipe.getIngredients()),
+                                    gridRecipe.getRecipeWidth(), gridRecipe.getRecipeHeight());
                         }
                     }
                     //ModRecipeRegistry.checkResult(ModRecipes.getIngredientAsItemStacks(shapedRecipe.getIngredients()),entityPlayer.getUniqueID(),ModBlocks.SCRAMBLE_BENCH.getRegistryName());
-                    ItemStack returnItem = ModRecipeRegistry.craftResult(
-                            getIngredientAsItemStacks(gridRecipe.getIngredients()),
-                            entityPlayer.getUniqueID(),
-                            ModBlocks.SCRAMBLE_BENCH.getRegistryName()).get(0);
+                    ItemStack returnItem = ModCraftingManager.findMatchingRecipe(
+                            player.getUniqueID(),
+                            ModBlocks.SCRAMBLE_BENCH.getRegistryName(),
+                            craftingGrid
+                    ).craftItem().get(0);
                     if (returnItem.getCount() < 1)
                         returnItem.setCount(1);
                     else if (returnItem.getCount() >= ModRecipeRegistry.previousStackSize * 2)//Temporary fix for output craft doubling

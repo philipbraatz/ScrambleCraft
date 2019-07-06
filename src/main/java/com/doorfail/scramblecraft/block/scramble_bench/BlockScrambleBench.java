@@ -15,24 +15,27 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.inventory.Container;
 import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.CraftingManager;
+import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.crafting.IShapedRecipe;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 //import org.apache.logging.log4j.LogManager;
 //import org.apache.logging.log4j.Logger;
 
+import java.util.Iterator;
 import java.util.Random;
 
 public class BlockScrambleBench extends BlockContainer
 {
-    //private static Logger logger = LogManager.getLogger(Reference.MODID);
+    private static Logger logger = LogManager.getLogger(Reference.MODID);
     private static final PropertyDirection FACING = BlockHorizontal.FACING;
 
     public BlockScrambleBench(String name)
@@ -81,13 +84,44 @@ public class BlockScrambleBench extends BlockContainer
     @Override
     public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
     {
-        //RECIPES
-        ModRecipeRegistry.addDefaultRecipe(
-                Minecraft.getMinecraft().player.getUniqueID(),
-                new ItemStack( Blocks.GRASS),new ItemStack(Blocks.DIRT),
-                ModBlocks.SCRAMBLE_BENCH.getRegistryName());
+        addCraftingTableRecipes();
         playerIn.openGui(ScrambleCraft.instance, Reference.GUI_SCRAMBLE_BENCH, worldIn, pos.getX(), pos.getY(), pos.getZ());
         return true;
+    }
+
+    public void addCraftingTableRecipes() {
+        Iterator craftingRecipeIter = CraftingManager.REGISTRY.iterator();
+
+        IShapedRecipe entryShaped;
+        IRecipe entry;
+        do {
+            try {
+                Object temp =craftingRecipeIter.next();
+                try {
+                    entryShaped = (IShapedRecipe)temp;
+
+                    ModRecipeRegistry.addDefaultRecipe(
+                            Minecraft.getMinecraft().player.getUniqueID(),
+                            ModRecipeRegistry.getIngredientAsItemStacks(entryShaped.getIngredients()),entryShaped.getRecipeOutput(),
+                            ModBlocks.SCRAMBLE_BENCH.getRegistryName(), entryShaped.getRecipeWidth(),entryShaped.getRecipeHeight());
+
+                } catch (Exception e)
+                {
+                    entry =(IRecipe)temp;
+                    ModRecipeRegistry.addDefaultRecipe(
+                            Minecraft.getMinecraft().player.getUniqueID(),
+                            ModRecipeRegistry.getIngredientAsItemStacks(entry.getIngredients()),entry.getRecipeOutput(),
+                            ModBlocks.SCRAMBLE_BENCH.getRegistryName(), 0,0);
+                }
+
+
+            } catch (Exception e)
+            {
+                logger.error(e.getMessage());
+            }
+
+
+        } while(craftingRecipeIter.hasNext());
     }
 
     @Override

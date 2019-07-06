@@ -1,13 +1,12 @@
 package com.doorfail.scramblecraft.block.scramble_furnace;
 
 import com.doorfail.scramblecraft.init.ModBlocks;
+import com.doorfail.scramblecraft.recipe.ModCraftingManager;
 import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
-import com.doorfail.scramblecraft.recipe.ScrambleFurnaceRecipes;
 import com.doorfail.scramblecraft.block.scramble_furnace.slot.ScrambleFurnaceFuelSlot;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Blocks;
@@ -24,7 +23,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityLockable;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -272,10 +270,10 @@ public class TileEntityScrambleFurnace extends TileEntityLockable implements ITi
         {
             List<ItemStack> inputs =new ArrayList<>();
             inputs.add(this.furnaceItemStacks.get(SLOTS_TOP[0]));
-            List<ItemStack> checkResult =ModRecipeRegistry.checkResult(
-                    inputs,
+            List<ItemStack> checkResult = ModCraftingManager.findMatchingRecipe(
                     lastUser.getUniqueID(),
-                    ModBlocks.SCRAMBLE_FURNACE_OFF.getRegistryName());
+                    ModBlocks.SCRAMBLE_FURNACE_OFF.getRegistryName(),
+                    this.getStackInSlot(SLOTS_TOP[0])).checkResult();
             ItemStack itemstack;
             if(checkResult.size() == 0)
                 return false;
@@ -315,9 +313,7 @@ public class TileEntityScrambleFurnace extends TileEntityLockable implements ITi
         if (this.canSmelt())
         {
             ItemStack itemstack = this.furnaceItemStacks.get(0);
-            List<ItemStack> stacked =new ArrayList<>();
-            stacked.add(itemstack);
-            ItemStack itemstack1 = ModRecipeRegistry.craftResult(stacked,lastUser.getUniqueID(),ModBlocks.SCRAMBLE_FURNACE_OFF.getRegistryName()).get(0);
+            ItemStack itemstack1 = ModCraftingManager.findMatchingRecipe(lastUser.getUniqueID(),ModBlocks.SCRAMBLE_FURNACE_OFF.getRegistryName(),itemstack).craftItem().get(0);
             ItemStack itemstack2 = this.furnaceItemStacks.get(2);
 
             if (itemstack2.isEmpty())

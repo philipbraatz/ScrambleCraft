@@ -18,19 +18,20 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.InventoryHelper;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.crafting.FurnaceRecipes;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.Mirror;
 import net.minecraft.util.Rotation;
+
+import java.util.*;
 
 public class BlockScrambleFurnace extends BlockContainer {
         public static final PropertyDirection FACING = BlockHorizontal.FACING;
@@ -55,15 +56,21 @@ public class BlockScrambleFurnace extends BlockContainer {
 
         @Override
         public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state, EntityPlayer playerIn, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-            //RECIPES
-
-            ModRecipeRegistry.addDefaultRecipe(
-                    Minecraft.getMinecraft().player.getUniqueID(),
-                    new ItemStack( ModBlocks.RUBY_ORE),new ItemStack(ModItems.RUBY),
-                    ModBlocks.SCRAMBLE_FURNACE_OFF.getRegistryName());
-
+            addFurnaceRecipes();
             playerIn.openGui(ScrambleCraft.instance, Reference.GUI_SCRAMBLE_FURNACE, worldIn, pos.getX(), pos.getY(), pos.getZ());
             return true;
+        }
+
+        public void addFurnaceRecipes() {
+            for (Map.Entry entry:FurnaceRecipes.instance().getSmeltingList().entrySet()
+                 ) {
+                List<ItemStack> inputs = new ArrayList<>();
+                inputs.add((ItemStack) entry.getKey());
+                ModRecipeRegistry.addDefaultRecipe(
+                        Minecraft.getMinecraft().player.getUniqueID(),
+                        inputs, (ItemStack) entry.getValue(),
+                        ModBlocks.SCRAMBLE_FURNACE_OFF.getRegistryName(), 1, 1);
+            }
         }
 
         @Override

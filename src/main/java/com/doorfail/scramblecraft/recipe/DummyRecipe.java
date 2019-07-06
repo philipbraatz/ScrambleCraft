@@ -1,6 +1,7 @@
 package com.doorfail.scramblecraft.recipe;
 
 import com.doorfail.scramblecraft.init.ModBlocks;
+import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -17,9 +18,9 @@ public class DummyRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements IR
         this.output = output;
     }
 
-    public static IRecipe from(IRecipe other)
+    public static IRecipe from(IRecipe old)
     {
-        return new DummyRecipe(other.getRecipeOutput()).setRegistryName(other.getRegistryName());
+        return new DummyRecipe(old.getRecipeOutput()).setRegistryName(old.getRegistryName());
     }
 
     @Override
@@ -43,6 +44,6 @@ public class DummyRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements IR
     @Override
     public ItemStack getRecipeOutput()
     {
-        return new ItemStack(Item.getByNameOrId("minecraft:scramble_bench"));
+        return new ItemStack(Items.ENDER_PEARL);
     }
 }

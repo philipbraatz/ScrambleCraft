@@ -1,6 +1,5 @@
 package com.doorfail.scramblecraft.recipe;
 
-import com.google.gson.*;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryCrafting;
@@ -9,152 +8,20 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.*;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.util.JsonUtils;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.*;
 import java.util.*;
 
 public class ModCraftingManager extends CraftingManager {
 
     private static final Logger LOGGER = LogManager.getLogger();
     private static ResourceLocation lastCrafterUsed;
-
-    public static boolean init()
-    {
-        try
-        {
-            //register special crafting rules
-            return parseJsonRecipes();
-        }
-        catch (Throwable var1)
-        {
-            return false;
-        }
-    }
-
-    private static boolean parseJsonRecipes()
-    {
-        FileSystem filesystem = null;
-        Gson gson = (new GsonBuilder()).setPrettyPrinting().disableHtmlEscaping().create();
-        boolean flag1;
-
-        try
-        {
-            URL url = CraftingManager.class.getResource("/assets/.mcassetsroot");
-
-            if (url != null)
-            {
-                URI uri = url.toURI();
-                Path path;
-
-                if ("file".equals(uri.getScheme()))
-                {
-                    //TODO maybe use custom asset recipes
-                    path = Paths.get(CraftingManager.class.getResource("/assets/minecraft/recipes").toURI());
-                }
-                else
-                {
-                    if (!"jar".equals(uri.getScheme()))
-                    {
-                        LOGGER.error("Unsupported scheme " + uri + " trying to list all recipes");
-                        return false;
-                    }
-
-                    filesystem = FileSystems.newFileSystem(uri, Collections.emptyMap());
-                    path = filesystem.getPath("/assets/minecraft/recipes");
-                }
-
-                Iterator<Path> iterator = Files.walk(path).iterator();
-
-                while (iterator.hasNext())
-                {
-                    Path path1 = iterator.next();
-
-                    if ("json".equals(FilenameUtils.getExtension(path1.toString())))
-                    {
-                        Path path2 = path.relativize(path1);
-                        String s = FilenameUtils.removeExtension(path2.toString()).replaceAll("\\\\", "/");
-                        ResourceLocation resourcelocation = new ResourceLocation(s);
-                        BufferedReader bufferedreader = null;
-
-                        try
-                        {
-                            try
-                            {
-                                bufferedreader = Files.newBufferedReader(path1);
-                                //register(s, parseRecipeJson((JsonObject)JsonUtils.fromJson(gson, bufferedreader, JsonObject.class)));
-                            }
-                            catch (JsonParseException jsonparseexception)
-                            {
-                                LOGGER.error("Parsing error loading recipe " + resourcelocation, jsonparseexception);
-                                return false;
-                            }
-                            catch (IOException ioexception)
-                            {
-                                LOGGER.error("Couldn't read recipe " + resourcelocation + " from " + path1, (ioexception));
-                                return false;
-                            }
-                        }
-                        finally
-                        {
-                            IOUtils.closeQuietly(bufferedreader);
-                        }
-                    }
-                }
-
-                return true;
-            }
-
-            LOGGER.error("Couldn't find .mcassetsroot");
-            flag1 = false;
-        }
-        catch (IOException | URISyntaxException urisyntaxexception)
-        {
-            LOGGER.error("Couldn't get a list of all recipe files", urisyntaxexception);
-            flag1 = false;
-            return flag1;
-        }
-        finally
-        {
-            IOUtils.closeQuietly(filesystem);
-        }
-
-        return flag1;
-    }
-
-    private static IRecipe parseRecipeJson(JsonObject recipe)
-    {
-        String s = JsonUtils.getString(recipe, "type");
-
-        if ("crafting_shaped".equals(s))
-        {
-            //TODO maybe not necessary
-            //switch to ShapedRecipes
-            return ShapedRecipes.deserialize(recipe);
-        }
-        else if ("crafting_shapeless".equals(s))
-        {
-            return ShapelessRecipes.deserialize(recipe);
-        }
-        else
-        {
-            throw new JsonSyntaxException("Invalid or unsupported recipe type '" + s + "'");
-        }
-    }
 
     public static void saveRecipe(EntityPlayer entityPlayer,ResourceLocation craftingBlock, ModRecipe recipe)
     {
@@ -182,21 +49,6 @@ public class ModCraftingManager extends CraftingManager {
         }
     }
 
-//    public static void saveAllRecipes(EntityPlayer entityPlayer, List<ModRecipe> recipes)
-//    {
-//        NBTTagCompound entityTags = entityPlayer.getEntityData();
-//        NBTTagList scrambleTags =entityTags.getTagList("ScrambleBench", Constants.NBT.TAG_COMPOUND);
-//        if(scrambleTags.tagCount()==0)
-//        {
-//            int i =0;
-//            for (ScrambleBenchRecipe sbr:recipes) {
-//                scrambleTags.appendTag(sbr.serializeNBT(i));
-//                i++;
-//            }
-//            entityTags.setTag("ScrambleBench",scrambleTags);
-//        }
-//    }
-
     public static void loadRecipes(EntityPlayer entityPlayer, ResourceLocation craftingBlock)
     {
         lastCrafterUsed =craftingBlock;
@@ -220,24 +72,38 @@ public class ModCraftingManager extends CraftingManager {
             }
     }
 
-    /**
-     * Retrieves an ItemStack that has multiple recipes for it.
-     */
-    public static ItemStack findMatchingResult(UUID playerId,ResourceLocation craftingBlock,InventoryCrafting craftMatrix, World worldIn)
-    {
-        for (IRecipe irecipe : ModRecipeRegistry.getRecipeList(playerId,craftingBlock))
-            if (irecipe.matches(craftMatrix, worldIn))
-                return irecipe.getCraftingResult(craftMatrix);
-
-        return ItemStack.EMPTY;
-    }
-
     @Nullable
-    public static ModRecipe findMatchingRecipe(UUID playerId,ResourceLocation craftingBlock,InventoryCrafting craftMatrix)
+    public static ModRecipe findMatchingRecipe(UUID playerId, ResourceLocation craftingBlock, ItemStack input)
     {
-        return ModRecipeRegistry.getRecipe(playerId,craftingBlock,ModRecipe.inventoryToItemStackList(craftMatrix));
-    }
+        InventoryCrafting inv = new InventoryCrafting(null,1,1);
+        inv.setInventorySlotContents(0,input);
 
+        return findMatchingRecipe(playerId,craftingBlock,inv);
+    }
+    @Nullable
+    public static ModRecipe findMatchingRecipe(UUID playerId, ResourceLocation craftingBlock, InventoryCrafting craftMatrix)
+    {
+        //Dont bother checking if inventory is empty
+        boolean empty =true;
+        for (int i = 0; i < craftMatrix.getSizeInventory(); i++) {
+            if(craftMatrix.getStackInSlot(i).getCount() != 0 &&
+                    craftMatrix.getStackInSlot(i) != ItemStack.EMPTY)
+                empty = false;
+        }
+        if(empty)
+            return ModRecipe.EMPTY(craftingBlock);//inventory was empty
+
+        //try to match every recipe
+        List<ModRecipe> iter = ModRecipeRegistry.getRecipeList(playerId,craftingBlock);
+        if(iter != null || iter.size() != 0) {
+            IRecipe irecipe;
+            for (ModRecipe recipe: iter) {
+                if(recipe.matches(craftMatrix, null))
+                    return recipe;
+            }
+        }
+        return ModRecipe.EMPTY(craftingBlock);//Not a valid recipe
+    }
     public static List<IRecipe> findRecipesUsedIn(Item result)
     {
         List<IRecipe> listRecipes =new ArrayList<>();

@@ -1,6 +1,5 @@
 package com.doorfail.scramblecraft.block.scramble_furnace.slot;
 
-import com.doorfail.scramblecraft.recipe.ScrambleFurnaceRecipes;
 import net.minecraft.entity.item.EntityXPOrb;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
@@ -57,7 +56,8 @@ public class ScrambleFurnaceOutputSlot extends Slot
         if (!this.player.world.isRemote)
         {
             int i = this.removeCount;
-            float f = ScrambleFurnaceRecipes.instance().getCookingExperience(stack);
+            //float f = ModRecipeRegistry.getCookingExperience(stack);
+            float f =0.1F;
 
             if (f == 0.0F)
             {

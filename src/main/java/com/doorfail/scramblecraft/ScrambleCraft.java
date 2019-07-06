@@ -1,7 +1,7 @@
 package com.doorfail.scramblecraft;
 
-import com.doorfail.scramblecraft.init.ModRecipes;
 import com.doorfail.scramblecraft.handlers.CraftingEventHandler;
+import com.doorfail.scramblecraft.init.ModRecipes;
 import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
 import com.doorfail.scramblecraft.util.Reference;
 import com.doorfail.scramblecraft.proxy.CommonProxy;
@@ -49,16 +49,17 @@ public class ScrambleCraft
     @Mod.EventHandler
     public void init(FMLInitializationEvent event)
     {
-        logger.info("Init");
+        //logger.info("Init");
 
         Configuration config = new Configuration(new File("config/TutorialMod.cfg"));
         config.load();
         int option1  = config.get("test","enableThisConfig",34).getInt();
-        logger.info(option1);
+        //logger.info(option1);
 
-        //ModRecipes.init();
-        ModRecipeRegistry.init();
+
         proxy.init(event);
+        ModRecipes.init();
+        //ModRecipeRegistry.init();
     }
 
     @Mod.EventHandler
@@ -66,7 +67,7 @@ public class ScrambleCraft
     {
         craftEvent.init();
 
-        logger.info("postInit");
+        //logger.info("postInit");
         proxy.postInit(event);
     }
 
