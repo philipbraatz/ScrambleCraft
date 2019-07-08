@@ -2,9 +2,8 @@ package com.doorfail.scramblecraft;
 
 import com.doorfail.scramblecraft.handlers.CraftingEventHandler;
 import com.doorfail.scramblecraft.init.ModRecipes;
-import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
-import com.doorfail.scramblecraft.util.Reference;
 import com.doorfail.scramblecraft.proxy.CommonProxy;
+import com.doorfail.scramblecraft.util.Reference;
 import com.google.common.collect.Maps;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Configuration;

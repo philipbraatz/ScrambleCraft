@@ -4,13 +4,12 @@ package com.doorfail.scramblecraft.block.scramble_bench;
 import com.doorfail.scramblecraft.init.ModBlocks;
 import com.doorfail.scramblecraft.recipe.ModCraftingManager;
 import com.doorfail.scramblecraft.recipe.ModRecipe;
-import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Items;
 import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.SPacketSetSlot;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
@@ -30,6 +29,7 @@ public class ContainerScrambleBench extends Container
     private final BlockPos pos;
     private final EntityPlayer player;
     private TileEntityScrambleBench benchInventory;
+    private boolean craftedLast = false;
 
 
     public ContainerScrambleBench(World world,BlockPos block, TileEntityScrambleBench benchInventory, EntityPlayer player)
@@ -38,6 +38,7 @@ public class ContainerScrambleBench extends Container
         this.pos =block;
         this.player = player;
         this.benchInventory = benchInventory;
+        benchInventory.openInventory(player);
         //if(recipes.size() <= 0) {
         //    ModCraftingManager.loadRecipes(this.player, ModBlocks.SCRAMBLE_BENCH.getRegistryName());
         //}
@@ -48,27 +49,30 @@ public class ContainerScrambleBench extends Container
 
         //3x3 grid
         for (int i = 0; i < 3; ++i)
-        {
             for (int j = 0; j < 3; ++j)
-            {
                 this.addSlotToContainer(new Slot(this.craftMatrix, j + i * 3, 30 + j * 18, 17 + i * 18));
-            }
-        }
 
         //inventory 9x3
         for (int k = 0; k < 3; ++k)
-        {
-            for (int i1 = 0; i1 < 9; ++i1)
-            {
+            for (int i1 = 0; i1 < 9; ++i1) {
                 this.addSlotToContainer(new Slot(player.inventory, i1 + k * 9 + 9, 8 + i1 * 18, 84 + k * 18));
             }
-        }
 
         //hotbar 9 slots
         for (int l = 0; l < 9; ++l)
-        {
             this.addSlotToContainer(new Slot(player.inventory, l, 8 + l * 18, 142));
+    }
+
+    public TileEntityScrambleBench getTileEntity(World world)
+    {
+        try {
+            TileEntity tileentity = world.getTileEntity(pos);
+            return (TileEntityScrambleBench) tileentity;
         }
+        catch (Exception e) {
+            throw new TypeNotPresentException("Could not find TileEntityScrambleBench at " + pos.toString(), e);
+        }
+
     }
 
     /**
@@ -88,9 +92,19 @@ public class ContainerScrambleBench extends Container
         {
             //this.clearContainer(playerIn, playerIn.world, this.craftMatrix);
         }
-        //TODO foreach item in matrix
-        //return Items to players inventory or drop them
 
+        try {
+            TileEntityScrambleBench tile = getTileEntity(playerIn.world);
+
+            BlockPos dropPos = pos;
+            dropPos.up();
+            if (tile != null)
+                InventoryHelper.dropInventoryItems(playerIn.world, dropPos, tile);
+        }
+        catch (Exception e)
+        {
+
+        }
         benchInventory.closeInventory(playerIn);
         super.onContainerClosed(playerIn);
     }
@@ -111,51 +125,35 @@ public class ContainerScrambleBench extends Container
         {
             EntityPlayerMP entityplayermp = (EntityPlayerMP)entityPlayer;
             ModRecipe  gridRecipe = ModCraftingManager.findMatchingRecipe(entityPlayer.getUniqueID(), ModBlocks.SCRAMBLE_BENCH.getRegistryName(), craftMatrix);
-            if(gridRecipe.checkResult().size() != 0)
+            if(gridRecipe.checkResult().size() == 1)//Crafting result of a single stack
             {
                 //ShapedRecipes shapedRecipe = new ShapedRecipes("scramble", craftingGrid.getWidth(), craftingGrid.getHeight(), gridRecipe.getIngredients(), gridRecipe.getRecipeOutput());
 
                 try {
-
                     if (!world.getGameRules().getBoolean("doLimitedCrafting")
                             || entityplayermp.getRecipeBook().isUnlocked(gridRecipe))
                     {
                         //set ingredients used
                         craftResult.setRecipeUsed(gridRecipe);
 
-                        //add new
-                        if (!ModRecipeRegistry.recipeExists(entityPlayer.getUniqueID(),
-                                ModBlocks.SCRAMBLE_BENCH.getRegistryName(),
-                                ModRecipeRegistry.getIngredientAsItemStacks(gridRecipe.getIngredients())) &&
-                                gridRecipe.getRecipeOutput().getItem() != Items.AIR) {
-                            ItemStack wholeItem = gridRecipe.getRecipeOutput();
-                            if (wholeItem.getCount() < 1)
-                                wholeItem.setCount(1);
+                        //ModRecipeRegistry.checkResult(ModRecipes.getIngredientAsItemStacks(shapedRecipe.getIngredients()),entityPlayer.getUniqueID(),ModBlocks.SCRAMBLE_BENCH.getRegistryName());
+                        ItemStack returnItem = gridRecipe.craftItem(player,craftingGrid,this).get(0);
 
-                            ModRecipeRegistry.addRecipe(
-                                    entityPlayer.getUniqueID(),
-                                    ModBlocks.SCRAMBLE_BENCH.getRegistryName(),
-                                    wholeItem, ModRecipeRegistry.getIngredientAsItemStacks(gridRecipe.getIngredients()),
-                                    gridRecipe.getRecipeWidth(), gridRecipe.getRecipeHeight());
-                        }
+                        ///TODO see if dupe is still a problem
+                        //if (returnItem.getCount() < 1)
+                        //    returnItem.setCount(1);
+                        //else if (returnItem.getCount() >= ModRecipeRegistry.previousStackSize * 2)//Temporary fix for output craft doubling
+                        //    returnItem.setCount(ModRecipeRegistry.previousStackSize);//will still dupe if output is less than double
+                        //ModRecipeRegistry.previousStackSize = returnItem.getCount();
+                        craftedLast =true;
+
+                        //server side
+                        craftResult.setInventorySlotContents(0, returnItem);
+                        //visual inside crafting table
+                        entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, 0, returnItem));
+
                     }
-                    //ModRecipeRegistry.checkResult(ModRecipes.getIngredientAsItemStacks(shapedRecipe.getIngredients()),entityPlayer.getUniqueID(),ModBlocks.SCRAMBLE_BENCH.getRegistryName());
-                    ItemStack returnItem = ModCraftingManager.findMatchingRecipe(
-                            player.getUniqueID(),
-                            ModBlocks.SCRAMBLE_BENCH.getRegistryName(),
-                            craftingGrid
-                    ).craftItem().get(0);
-                    if (returnItem.getCount() < 1)
-                        returnItem.setCount(1);
-                    else if (returnItem.getCount() >= ModRecipeRegistry.previousStackSize * 2)//Temporary fix for output craft doubling
-                        returnItem.setCount(ModRecipeRegistry.previousStackSize);//will still dupe if output is less than double
-                    ModRecipeRegistry.previousStackSize = returnItem.getCount();
 
-
-                //server side
-                craftResult.setInventorySlotContents(0, returnItem);
-                //visual inside crafting table
-                entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, 0, returnItem));
                 }catch (Exception e)
                 {
                     logger.info(e.getLocalizedMessage());
@@ -163,10 +161,25 @@ public class ContainerScrambleBench extends Container
             }
             else
             {
+                //Invalid Recipe
+                logger.info("Crafted = "+craftedLast);
+                craftedLast =false;
+
                 craftResult.setInventorySlotContents(0, ItemStack.EMPTY);
                 //visual inside crafting table
                 entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, 0,  ItemStack.EMPTY));
+
+
             }
+
+            //Xupdate TileEntityX Only dupes Items after craft
+            //try {
+            //    TileEntityScrambleBench tileEntity = getTileEntity(world);
+            //    for (int i = 0; i < craftingGrid.getSizeInventory(); i++) {
+            //        tileEntity.setInventorySlotContents(i, craftingGrid.getStackInSlot(i));
+            //        tileEntity.setInventorySlotContents(10, craftResult.getStackInSlot(0));
+            //    }
+            //}catch (Exception e){}
         }
     }
 
@@ -176,36 +189,24 @@ public class ContainerScrambleBench extends Container
      * inventory and the other inventory(s).
      */
     @Override
-    public ItemStack transferStackInSlot(EntityPlayer playerIn, int index)
-    {
+    public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
         ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.inventorySlots.get(index);
-
         if (slot != null && slot.getHasStack())
         {
             ItemStack itemstack1 = slot.getStack();
             itemstack = itemstack1.copy();
-
             if (index < this.craftMatrix.getSizeInventory())
             {
                 if (!this.mergeItemStack(itemstack1, this.craftMatrix.getSizeInventory(), this.inventorySlots.size(), true))
-                {
                     return ItemStack.EMPTY;
-                }
-            }
-            else if (!this.mergeItemStack(itemstack1, 0, this.craftMatrix.getSizeInventory(), false))
-            {
+            } else if (!this.mergeItemStack(itemstack1, 0, this.craftMatrix.getSizeInventory(), false))
                 return ItemStack.EMPTY;
-            }
 
             if (itemstack1.isEmpty())
-            {
                 slot.putStack(ItemStack.EMPTY);
-            }
             else
-            {
                 slot.onSlotChanged();
-            }
         }
 
         return itemstack;

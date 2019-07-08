@@ -1,15 +1,16 @@
 package com.doorfail.scramblecraft.init;
 
 import com.doorfail.scramblecraft.items.ItemBase;
-import com.doorfail.scramblecraft.util.Reference;
-import com.doorfail.scramblecraft.items.tools.ToolAxe;
 import com.doorfail.scramblecraft.items.armor.ArmorBase;
 import com.doorfail.scramblecraft.items.food.FoodEffectBase;
-
+import com.doorfail.scramblecraft.items.tools.ToolAxe;
+import com.doorfail.scramblecraft.util.Reference;
 import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.EntityEquipmentSlot;
-import net.minecraft.item.*;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemArmor;
+import net.minecraft.item.ItemAxe;
 import net.minecraft.potion.PotionEffect;
 import net.minecraftforge.common.util.EnumHelper;
 

@@ -1,10 +1,8 @@
 package com.doorfail.scramblecraft.block.scramble_furnace;
 
+import com.doorfail.scramblecraft.block.scramble_furnace.slot.ScrambleFurnaceFuelSlot;
 import com.doorfail.scramblecraft.init.ModBlocks;
 import com.doorfail.scramblecraft.recipe.ModCraftingManager;
-import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
-import com.doorfail.scramblecraft.block.scramble_furnace.slot.ScrambleFurnaceFuelSlot;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,13 +13,7 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.inventory.ItemStackHelper;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemBoat;
-import net.minecraft.item.ItemDoor;
-import net.minecraft.item.ItemHoe;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemSword;
-import net.minecraft.item.ItemTool;
+import net.minecraft.item.*;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntityLockable;
 import net.minecraft.util.EnumFacing;
@@ -270,10 +262,12 @@ public class TileEntityScrambleFurnace extends TileEntityLockable implements ITi
         {
             List<ItemStack> inputs =new ArrayList<>();
             inputs.add(this.furnaceItemStacks.get(SLOTS_TOP[0]));
+            Container c =this.createContainer(lastUser.inventory,lastUser);
+            c.putStackInSlot(SLOTS_TOP[0],this.furnaceItemStacks.get(SLOTS_TOP[0]));
             List<ItemStack> checkResult = ModCraftingManager.findMatchingRecipe(
                     lastUser.getUniqueID(),
                     ModBlocks.SCRAMBLE_FURNACE_OFF.getRegistryName(),
-                    this.getStackInSlot(SLOTS_TOP[0])).checkResult();
+                    c,0).checkResult();
             ItemStack itemstack;
             if(checkResult.size() == 0)
                 return false;
@@ -313,7 +307,13 @@ public class TileEntityScrambleFurnace extends TileEntityLockable implements ITi
         if (this.canSmelt())
         {
             ItemStack itemstack = this.furnaceItemStacks.get(0);
-            ItemStack itemstack1 = ModCraftingManager.findMatchingRecipe(lastUser.getUniqueID(),ModBlocks.SCRAMBLE_FURNACE_OFF.getRegistryName(),itemstack).craftItem().get(0);
+            Container c =this.createContainer(lastUser.inventory,lastUser);
+            c.putStackInSlot(SLOTS_TOP[0],this.furnaceItemStacks.get(SLOTS_TOP[0]));
+            ItemStack itemstack1 = ModCraftingManager.findMatchingRecipe(
+                    lastUser.getUniqueID(),
+                    ModBlocks.SCRAMBLE_FURNACE_OFF.getRegistryName(),
+                    c,0
+            ).craftItem(lastUser,this,createContainer(lastUser.inventory,lastUser) ).get(0);
             ItemStack itemstack2 = this.furnaceItemStacks.get(2);
 
             if (itemstack2.isEmpty())

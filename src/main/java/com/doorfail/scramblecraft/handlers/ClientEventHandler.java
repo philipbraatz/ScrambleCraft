@@ -1,6 +1,5 @@
 package com.doorfail.scramblecraft.handlers;
 
-import com.doorfail.scramblecraft.block.scramble_bench.GUIScrambleBench;
 import com.doorfail.scramblecraft.block.scramble_bench.RecipesGUIScrambleBench;
 import com.doorfail.scramblecraft.util.Reference;
 import com.doorfail.scramblecraft.util.ReflectionUtils;
@@ -175,7 +174,7 @@ public class ClientEventHandler
                 List buttonList = (List)ReflectionUtils.getPrivateFieldValue(net.minecraft.client.gui.GuiScreen.class, guiFurnace, "buttonList");
                 if (buttonList.isEmpty()) {
                     buttonList.add(new RecipesGUIScrambleBench(0, 0, 0, guiFurnace, buttonList));
-                    ResourceLocation CRAFTING_TABLE_GUI_TEXTURES = new ResourceLocation("textures/gui/container/crafting_table.png");
+                    ResourceLocation CRAFTING_TABLE_GUI_TEXTURES = new ResourceLocation("textures/recipe_book/container/crafting_table.png");
 
                     GuiButtonImage recipeButton = new GuiButtonImage(1, 0, 0, 20, 18, 0, 131, 19, CRAFTING_TABLE_GUI_TEXTURES)
                     {

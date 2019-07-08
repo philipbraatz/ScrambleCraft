@@ -1,9 +1,10 @@
 package com.doorfail.scramblecraft.init;
 
-import com.doorfail.scramblecraft.recipe.*;
+import com.doorfail.scramblecraft.recipe.DummyRecipe;
+import com.doorfail.scramblecraft.recipe.ModCraftingManager;
+import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
 import com.google.common.collect.Lists;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
@@ -13,7 +14,10 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.ForgeRegistry;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class ModRecipes {
 

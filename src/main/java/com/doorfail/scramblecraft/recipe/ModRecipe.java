@@ -1,23 +1,25 @@
 package com.doorfail.scramblecraft.recipe;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagInt;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.crafting.IShapedRecipe;
-import net.minecraftforge.common.crafting.IngredientNBT;
 import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.IForgeRegistryEntry;
-import net.minecraftforge.registries.IRegistryDelegate;
 import org.apache.logging.log4j.Logger;
 
-import javax.annotation.Nullable;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +31,7 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
     public ResourceLocation craftingMachine;
 
     private List<ItemStack> outputItemStacks= new ArrayList<>();
-    private List<ItemStack> inputItemStacks = new ArrayList<>();
+    private List<Ingredient> inputIngredients = new ArrayList<>();
     private int coolDown =0;
     private int count=0;
     private int width;
@@ -38,55 +40,57 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
     /** An NBTTagCompound containing data about an ItemStack. */
     private NBTTagCompound stackTagCompound;
 
-    public ModRecipe(ResourceLocation craftingBlock, List<ItemStack> inputs,List<ItemStack> outputs,int width, int height,boolean canScramble)
+    public ModRecipe(ResourceLocation craftingBlock, List<Ingredient> inputs,List<ItemStack> outputs,int width, int height,boolean canScramble)
     {
         SetComponents(craftingBlock,inputs,outputs, width, height,canScramble,true);
     }
-    public ModRecipe(ResourceLocation craftingBlock, List<ItemStack> inputs,List<ItemStack> outputs,int width, int height)
+    public ModRecipe(ResourceLocation craftingBlock, List<Ingredient> inputs,List<ItemStack> outputs,int width, int height)
     {
         SetComponents(craftingBlock,inputs,outputs, width,  height,true,true);
     }
-    public ModRecipe(ResourceLocation craftingBlock, ItemStack input,List<ItemStack> outputs,int width, int height)
+    public ModRecipe(ResourceLocation craftingBlock, Ingredient input,List<ItemStack> outputs,int width, int height)
     {
-        List<ItemStack> ingredients = new ArrayList<>();
+        List<Ingredient> ingredients = new ArrayList<>();
         ingredients.add(input);
         SetComponents(craftingBlock,ingredients,outputs, width, height,true,true);
     }
-    public ModRecipe(ResourceLocation craftingBlock, List<ItemStack> inputs,ItemStack output,int width, int height)
+    public ModRecipe(ResourceLocation craftingBlock, List<Ingredient> inputs,ItemStack output,int width, int height)
     {
         List<ItemStack> ingredients = new ArrayList<>();
         ingredients.add(output);
         SetComponents(craftingBlock,inputs,ingredients, width,  height,true,true);
     }
-    public ModRecipe(ResourceLocation craftingBlock, ItemStack input,ItemStack output,int width, int height)
+    public ModRecipe(ResourceLocation craftingBlock, Ingredient input,ItemStack output,int width, int height)
     {
-        List<ItemStack> ingredients = new ArrayList<>();
+        List<Ingredient> ingredients = new ArrayList<>();
         List<ItemStack> outgoing = new ArrayList<>();
         ingredients.add(input);
         outgoing.add(output);
         SetComponents(craftingBlock,ingredients,outgoing, width, height,true,true);
     }
-    private ModRecipe(ResourceLocation craftingBlock, List<ItemStack> inputs,List<ItemStack> outputs,int width, int height,boolean NA_cantScramble,boolean bypass)
+    private ModRecipe(ResourceLocation craftingBlock, List<Ingredient> inputs,List<ItemStack> outputs,int width, int height,boolean NA_cantScramble,boolean bypass)
     {
         SetComponents(craftingBlock,inputs,outputs, width, height,false,true);
     }
 
-    public List<ItemStack> getInputItemStacks()
+    public List<Ingredient> getInputIngredients()
     {
-        return inputItemStacks;
+        return inputIngredients;
     }
 
-    private void SetComponents(ResourceLocation craftingBlock, List<ItemStack> inputs,List<ItemStack> outputs,int width, int height,boolean canScramble,boolean bypass)
+    private void SetComponents(ResourceLocation craftingBlock, List<Ingredient> inputs,List<ItemStack> outputs,int width, int height,boolean canScramble,boolean bypass)
     {
         craftingMachine =craftingBlock;
         this.width =width;
         this.height =height;
+        if(outputs.size()>0)
+            this.setRegistryName(outputs.get(0).getItem().getRegistryName());
 
         try {
             boolean isEmpty = true;
-            for (ItemStack it:inputs
+            for (Ingredient it:inputs
             ) {
-                if(it != ItemStack.EMPTY)
+                if(it != Ingredient.EMPTY)
                     isEmpty =false;
             }
             if(isEmpty && !bypass)
@@ -101,7 +105,7 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
             if(isEmpty&& !bypass)
                 throw new InvalidParameterException("outputs cannot be empty");
 
-            inputItemStacks = inputs;
+            inputIngredients = inputs;
             outputItemStacks = outputs;
         } catch (Exception e)
         {
@@ -133,13 +137,11 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
     {
         if(coolDown != -1)
         {
-            int coolDownIncrease=0;
-            for (ItemStack it:inputItemStacks)
-                coolDownIncrease += it.getCount();
+            int stacksCount= 0;
             for (ItemStack it:outputItemStacks)
-                coolDownIncrease += it.getCount();
+                stacksCount += it.getCount();//normally just a single ItemStack
 
-            coolDown += inputItemStacks.size() + outputItemStacks.size();//cooldown += how big the craft is + the normal output count
+            coolDown += inputIngredients.size() + stacksCount;//coolDown += how big the craft is + the normal output count
             count = 0;
         }
     }
@@ -150,9 +152,11 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
         return outputItemStacks;
     }
     //only use when giving item to player
-    public List<ItemStack> craftItem()
+    public List<ItemStack> craftItem(EntityPlayer player, IInventory crafting, Container container)
     {
         count++;
+        if(IsReady())
+            ModRecipeRegistry.randomizeRecipe(crafting,player,craftingMachine,this.inputIngredients,container);
         return outputItemStacks;
     }
 
@@ -177,9 +181,8 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
 
         if(compound.hasKey("ingredients", Constants.NBT.TAG_LIST)) {
             NBTTagList ingredientNBTList = compound.getTagList("ingredients", Constants.NBT.TAG_COMPOUND);
-            for (int i = 0; i <ingredientNBTList.tagCount() ; i++) {
-                this.inputItemStacks.add(new ItemStack(ingredientNBTList.getCompoundTagAt(i)));
-            }
+            for (int i = 0; i <ingredientNBTList.tagCount() ; i++)
+                this.inputIngredients.add(Ingredient.fromStacks(new ItemStack(ingredientNBTList.getCompoundTagAt(i))));
         }
 
         if(compound.hasKey("output", Constants.NBT.TAG_LIST)) {
@@ -207,8 +210,8 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
 
         //input
         NBTTagList ingredientsNBT = new NBTTagList();
-        for (ItemStack it:inputItemStacks)
-            ingredientsNBT.appendTag(it.serializeNBT());
+        for (Ingredient it: inputIngredients)
+            ingredientsNBT.appendTag((it).getMatchingStacks()[0].serializeNBT());//TODO serialize all ingredients getMatchingStacks()
 
         //output
         NBTTagList outputItemStackNBT = new NBTTagList();
@@ -273,18 +276,23 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
                 int colj = col - j;
                 Ingredient ingredient = Ingredient.EMPTY;
 
-                //If indexes are still within inventory
-                if (rowi >= 0 && colj >= 0 &&
-                        rowi < this.width && colj < this.height   ) {
-                    if (hasHeight) {
-                        ingredient =Ingredient.fromStacks(this.inputItemStacks.get(this.width - rowi - 1 + colj * this.height));
-                    } else {
-                        ingredient = Ingredient.fromStacks(this.inputItemStacks.get(rowi + colj * this.width));
+                try {
+                    //If indexes are still within inventory
+                    if (rowi >= 0 && colj >= 0 &&
+                            rowi < this.width && colj < this.height) {
+                        if (hasHeight) {
+                            ingredient = this.inputIngredients.get(this.width - rowi - 1 + colj * this.height);
+                        } else {
+                            ingredient = this.inputIngredients.get(rowi + colj * this.width);
+                        }
                     }
-                }
 
-                if (!ingredient.apply(craftingInventory.getStackInRowAndColumn(row, col))) {
-                    return false;
+                    if (!ingredient.apply(craftingInventory.getStackInRowAndColumn(row, col))) {
+                        return false;
+                    }
+                }catch (IndexOutOfBoundsException e)
+                {
+                    //logger.warn("Out of bounds at row "+row+", col "+col);
                 }
             }
         }
@@ -295,7 +303,7 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
     @Override
     public ItemStack getCraftingResult(InventoryCrafting inventoryCrafting) {
         if(matches(inventoryCrafting, Minecraft.getMinecraft().world))
-            return craftItem().get(0);
+            return craftItem(Minecraft.getMinecraft().player,inventoryCrafting,null).get(0);
         else
             return ItemStack.EMPTY;
     }
@@ -313,9 +321,9 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
     @Override
     public NonNullList<Ingredient> getIngredients() {
        NonNullList<Ingredient> list = NonNullList.create();
-        for (ItemStack it:this.inputItemStacks
+        for (Ingredient it:this.inputIngredients
              ) {
-            list.add(Ingredient.fromStacks(it));
+            list.add(it);
         }
         return list;
     }
@@ -323,10 +331,10 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
 
     public static ModRecipe EMPTY(ResourceLocation craftingBlock)
     {
-        ModRecipe blank = new ModRecipe(craftingBlock,new ArrayList<ItemStack>(),new ArrayList<ItemStack>(),0,0,false,true);
+        ModRecipe blank = new ModRecipe(craftingBlock,new ArrayList<Ingredient>(),new ArrayList<ItemStack>(),0,0,false,true);
         return blank;
     }
-    public static ModRecipe EMTPY_INPUT(ResourceLocation craftingBlock,List<ItemStack> input,int width,int height)
+    public static ModRecipe EMTPY_INPUT(ResourceLocation craftingBlock,List<Ingredient> input,int width,int height)
     {
         //Uses bypass initialization
         return new ModRecipe(craftingBlock,input,new ArrayList<ItemStack>(),width,height,false,true);
@@ -349,7 +357,7 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
         if ((o instanceof ModRecipe)) {
             ModRecipe c = (ModRecipe) o;
             return c.craftingMachine == this.craftingMachine &&
-                c.inputItemStacks.equals( this.inputItemStacks) &&
+                c.inputIngredients.equals( this.inputIngredients) &&
                 c.width == this.width &&
                 c.height == this.height &&
                 c.outputItemStacks.equals(this.outputItemStacks);

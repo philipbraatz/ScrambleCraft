@@ -2,10 +2,13 @@ package com.doorfail.scramblecraft.recipe;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.*;
+import net.minecraft.item.crafting.CraftingManager;
+import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.NonNullList;
@@ -16,7 +19,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class ModCraftingManager extends CraftingManager {
 
@@ -73,10 +78,10 @@ public class ModCraftingManager extends CraftingManager {
     }
 
     @Nullable
-    public static ModRecipe findMatchingRecipe(UUID playerId, ResourceLocation craftingBlock, ItemStack input)
+    public static ModRecipe findMatchingRecipe(UUID playerId, ResourceLocation craftingBlock, Container self,int index)
     {
-        InventoryCrafting inv = new InventoryCrafting(null,1,1);
-        inv.setInventorySlotContents(0,input);
+        InventoryCrafting inv = new InventoryCrafting(self,1,1);
+        inv.setInventorySlotContents(0,self.getSlot(index).getStack());
 
         return findMatchingRecipe(playerId,craftingBlock,inv);
     }

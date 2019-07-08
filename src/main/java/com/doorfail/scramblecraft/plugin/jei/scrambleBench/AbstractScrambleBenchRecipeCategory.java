@@ -7,7 +7,7 @@ import mezz.jei.api.recipe.IRecipeWrapper;
 import net.minecraft.util.ResourceLocation;
 
 public abstract class AbstractScrambleBenchRecipeCategory<T extends IRecipeWrapper> implements IRecipeCategory<T> {
-    static final ResourceLocation TEXTURES =new ResourceLocation(Reference.MODID+":textures/gui/scramble_bench.png");
+    static final ResourceLocation TEXTURES =new ResourceLocation(Reference.MODID+":textures/recipe_book/scramble_bench.png");
     static final int input11 =0;
     static final int input12 =1;
     static final int input13 =2;

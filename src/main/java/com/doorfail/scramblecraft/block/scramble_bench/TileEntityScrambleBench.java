@@ -50,7 +50,9 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
     @Override
     public ItemStack decrStackSize(int index, int count)
     {
-        return ItemStackHelper.getAndSplit(scrambleBenchItemStacks, index, count);
+        ItemStack ret =ItemStackHelper.getAndSplit(scrambleBenchItemStacks, index, count);
+
+        return ret;
     }
 
     @Override
@@ -72,6 +74,11 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
 
         if(index == 0 && !flag)
             this.markDirty();
+    }
+    @Override
+    public void updateContainingBlockInfo()
+    {
+        super.updateContainingBlockInfo();
     }
 
     /**

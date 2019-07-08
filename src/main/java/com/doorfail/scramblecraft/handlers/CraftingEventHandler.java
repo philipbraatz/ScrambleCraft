@@ -1,22 +1,11 @@
 package com.doorfail.scramblecraft.handlers;
 
-import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
 import com.doorfail.scramblecraft.util.Reference;
-import net.minecraft.block.Block;
-import net.minecraft.client.Minecraft;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class CraftingEventHandler {
     private static Logger logger = LogManager.getLogger(Reference.MODID);
@@ -48,28 +37,28 @@ public class CraftingEventHandler {
 
                 //event.crafting = new ItemStack( Items.CARROT);
                 logger.info("Crafting - " + event.crafting);
-                List<Item> ingredients = new ArrayList<>();
-                for (int i = 0; i < event.craftMatrix.getSizeInventory(); i++) {
-                    ingredients.add(event.craftMatrix.getStackInSlot(i).getItem());
-                }
-                List<ItemStack> ingredientClean = new ArrayList<>();
-                for (Item itemStack : ingredients) {
-                    if (itemStack != Items.AIR)
-                        ingredientClean.add(new ItemStack(itemStack));
-                }
+                //List<Item> ingredients = new ArrayList<>();
+                //for (int i = 0; i < event.craftMatrix.getSizeInventory(); i++) {
+                //    ingredients.add(event.craftMatrix.getStackInSlot(i).getItem());
+                //}
+                //List<ItemStack> ingredientClean = new ArrayList<>();
+                //for (Item itemStack : ingredients) {
+                //    if (itemStack != Items.AIR)
+                //        ingredientClean.add(new ItemStack(itemStack));
+                //}
 
                 //if(!ModRecipes.ingredientInputs.contains(ingredients))
                 //    ModRecipes.addRecipe(ingredients,new ItemStack(event.crafting.getItem()));
 
 
                 //Get the crafting block being looked at
-                RayTraceResult mop =  Minecraft.getMinecraft().objectMouseOver;
-                if(mop != null) {
-                    //EnumFacing blockHitSide = mop.sideHit;
-                    Block blockLookingAt = event.player.world.getBlockState(mop.getBlockPos()).getBlock();
-
-                    ModRecipeRegistry.randomizeRecipe(event.craftMatrix, event.player, blockLookingAt.getRegistryName(), ingredientClean);
-                }
+                //RayTraceResult mop =  Minecraft.getMinecraft().objectMouseOver;
+                //if(mop != null) {
+                //    //EnumFacing blockHitSide = mop.sideHit;
+                //    Block blockLookingAt = event.player.world.getBlockState(mop.getBlockPos()).getBlock();
+//
+                //    ModRecipeRegistry.randomizeRecipe(event.craftMatrix, event.player, blockLookingAt.getRegistryName(), ingredientClean);
+                //}
                 //logger.info("Randomized Recipe");
             }
         }
@@ -81,7 +70,7 @@ public class CraftingEventHandler {
     public void init()
     {
         MinecraftForge.EVENT_BUS.register(this);
-        logger.info("Crafting Registered Success");
+        //logger.info("Crafting Registered Success");
     }
 
 }

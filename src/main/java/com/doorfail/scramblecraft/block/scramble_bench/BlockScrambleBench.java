@@ -5,7 +5,9 @@ import com.doorfail.scramblecraft.init.ModBlocks;
 import com.doorfail.scramblecraft.init.ModItems;
 import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
 import com.doorfail.scramblecraft.util.Reference;
-import net.minecraft.block.*;
+import net.minecraft.block.BlockContainer;
+import net.minecraft.block.BlockHorizontal;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyDirection;
@@ -27,11 +29,12 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.crafting.IShapedRecipe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-//import org.apache.logging.log4j.LogManager;
-//import org.apache.logging.log4j.Logger;
 
 import java.util.Iterator;
 import java.util.Random;
+
+//import org.apache.logging.log4j.LogManager;
+//import org.apache.logging.log4j.Logger;
 
 public class BlockScrambleBench extends BlockContainer
 {
@@ -102,7 +105,7 @@ public class BlockScrambleBench extends BlockContainer
 
                     ModRecipeRegistry.addDefaultRecipe(
                             Minecraft.getMinecraft().player.getUniqueID(),
-                            ModRecipeRegistry.getIngredientAsItemStacks(entryShaped.getIngredients()),entryShaped.getRecipeOutput(),
+                            entryShaped.getIngredients(),entryShaped.getRecipeOutput(),
                             ModBlocks.SCRAMBLE_BENCH.getRegistryName(), entryShaped.getRecipeWidth(),entryShaped.getRecipeHeight());
 
                 } catch (Exception e)
@@ -110,7 +113,7 @@ public class BlockScrambleBench extends BlockContainer
                     entry =(IRecipe)temp;
                     ModRecipeRegistry.addDefaultRecipe(
                             Minecraft.getMinecraft().player.getUniqueID(),
-                            ModRecipeRegistry.getIngredientAsItemStacks(entry.getIngredients()),entry.getRecipeOutput(),
+                            entry.getIngredients(),entry.getRecipeOutput(),
                             ModBlocks.SCRAMBLE_BENCH.getRegistryName(), 0,0);
                 }
 
@@ -202,21 +205,13 @@ public class BlockScrambleBench extends BlockContainer
             EnumFacing enumfacing = state.getValue(FACING);
 
             if (enumfacing == EnumFacing.NORTH && iblockstate.isFullBlock() && !iblockstate1.isFullBlock())
-            {
                 enumfacing = EnumFacing.SOUTH;
-            }
             else if (enumfacing == EnumFacing.SOUTH && iblockstate1.isFullBlock() && !iblockstate.isFullBlock())
-            {
                 enumfacing = EnumFacing.NORTH;
-            }
             else if (enumfacing == EnumFacing.WEST && iblockstate2.isFullBlock() && !iblockstate3.isFullBlock())
-            {
                 enumfacing = EnumFacing.EAST;
-            }
             else if (enumfacing == EnumFacing.EAST && iblockstate3.isFullBlock() && !iblockstate2.isFullBlock())
-            {
                 enumfacing = EnumFacing.WEST;
-            }
 
             worldIn.setBlockState(pos, state.withProperty(FACING, enumfacing), 2);
         }

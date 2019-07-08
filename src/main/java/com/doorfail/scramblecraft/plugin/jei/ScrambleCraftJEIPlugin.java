@@ -1,19 +1,16 @@
 package com.doorfail.scramblecraft.plugin.jei;
 
-import com.doorfail.scramblecraft.block.scramble_bench.GUIScrambleBench;
 import com.doorfail.scramblecraft.plugin.jei.ingredient.DynamicIngredientHelper;
 import com.doorfail.scramblecraft.plugin.jei.ingredient.DynamicIngredientRenderer;
 import com.doorfail.scramblecraft.plugin.jei.ingredient.DynamicItemStack;
 import com.doorfail.scramblecraft.plugin.jei.ingredient.DynamicItemStackRenderer;
 import com.doorfail.scramblecraft.plugin.jei.scrambleBench.ScrambleBenchRecipeCategory;
-import com.doorfail.scramblecraft.plugin.jei.scrambleBench.ScrambleBenchRecipeMaker;
 import com.doorfail.scramblecraft.util.Reference;
 import mezz.jei.api.*;
 import mezz.jei.api.ingredients.IIngredientRegistry;
 import mezz.jei.api.ingredients.IModIngredientRegistration;
 import mezz.jei.api.recipe.IRecipeCategoryRegistration;
 import mezz.jei.api.recipe.transfer.IRecipeTransferRegistry;
-import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

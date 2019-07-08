@@ -7,7 +7,10 @@ import com.doorfail.scramblecraft.recipe.ModCraftingManager;
 import com.doorfail.scramblecraft.recipe.ModRecipe;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
-import net.minecraft.inventory.*;
+import net.minecraft.inventory.Container;
+import net.minecraft.inventory.IContainerListener;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
 public class ContainerScrambleFurnace extends Container
@@ -113,7 +116,10 @@ public class ContainerScrambleFurnace extends Container
             }
             else if (index != 1 && index != 0)
             {
-                if (ModCraftingManager.findMatchingRecipe(playerIn.getUniqueID(), ModBlocks.SCRAMBLE_FURNACE_OFF.getRegistryName(),itemstack1)!= ModRecipe.EMPTY(ModBlocks.SCRAMBLE_FURNACE_OFF.getRegistryName()))
+                if (ModCraftingManager.findMatchingRecipe(playerIn.getUniqueID(),
+                        ModBlocks.SCRAMBLE_FURNACE_OFF.getRegistryName(),
+                        (Container)this,index) !=
+                        ModRecipe.EMPTY(ModBlocks.SCRAMBLE_FURNACE_OFF.getRegistryName()))
                 {
                     if (!this.mergeItemStack(itemstack1, 0, 1, false))
                     {

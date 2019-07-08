@@ -4,10 +4,10 @@ import com.doorfail.scramblecraft.init.ModBlocks;
 import com.doorfail.scramblecraft.init.ModItems;
 import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockWorkbench;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.item.Item;
@@ -16,10 +16,8 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.registries.ForgeRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -82,44 +80,58 @@ public class ModRecipeRegistry {
 
 
     }
-    public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, ItemStack output, Block input, int width, int height)
+    public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, Block input, ItemStack output, int width, int height)
     {
-        addRecipe(playerId, craftingMachine, output, Item.getItemFromBlock(input),width ,height );
+        addRecipe(playerId, craftingMachine, Item.getItemFromBlock(input), output, width ,height );
     }
 
     //Item IN
-    public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, ItemStack output, Item input, int width, int height)
+    public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, Item input, ItemStack output, int width, int height)
     {
-        addRecipe(playerId, craftingMachine, output, new ItemStack(input, 1, OreDictionary.WILDCARD_VALUE),width , height);
+        addRecipe(playerId, craftingMachine, Ingredient.fromItem(input), output, width , height);
     }
 
     //Stacks
-    public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, ItemStack output, ItemStack input, int width, int height)
+    public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, Ingredient input, ItemStack output, int width, int height)
     {
-        List<ItemStack> ingredients = new ArrayList<>();
+        List<Ingredient> ingredients = new ArrayList<>();
         List<ItemStack> results = new ArrayList<>();
         ingredients.add(input);
         results.add(output);
-        addRecipe( playerId, craftingMachine, results, ingredients,width , height);
+        addRecipe( playerId, craftingMachine, ingredients, results, width , height);
     }
 
     //IN List
-    public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, List<ItemStack> input, ItemStack output, int width, int height)
+    public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, List<Ingredient> input, ItemStack output, int width, int height)
     {
         List<ItemStack> results = new ArrayList<>();
         results.add(output);
-        addRecipe( playerId, craftingMachine, results, input,width ,height );
+        addRecipe( playerId, craftingMachine, input, results, width ,height );
     }
     //OUT List
-    public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, ItemStack input, List<ItemStack> output, int width, int height)
+    public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, Ingredient input, List<ItemStack> output, int width, int height)
     {
-        List<ItemStack> ingredients = new ArrayList<>();
+        List<Ingredient> ingredients = new ArrayList<>();
         ingredients.add(input);
-        addRecipe( playerId, craftingMachine, output, ingredients, width,height );
+        addRecipe( playerId, craftingMachine, ingredients, output, width,height );
+    }
+    //IN NonNullList
+    public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, NonNullList<Ingredient> input, ItemStack output, int width, int height)
+    {
+        List<ItemStack> results = new ArrayList<>();
+        results.add(output);
+        addRecipe( playerId, craftingMachine, input, results, width ,height );
+    }
+    //OUT NonNullList
+    public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, Ingredient input, NonNullList<ItemStack> output, int width, int height)
+    {
+        List<Ingredient> ingredients = new ArrayList<>();
+        ingredients.add(input);
+        addRecipe( playerId, craftingMachine, ingredients, output, width,height );
     }
 
     //Lists
-    public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, List<ItemStack> output, List<ItemStack> input, int width, int height)
+    public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, List<Ingredient> input, List<ItemStack> output, int width, int height)
     {
         for (ItemStack it:output)
         {
@@ -142,20 +154,20 @@ public class ModRecipeRegistry {
         playerRecipeList.put(playerId, recipes);//update
     }
 
-    public static void addDefaultRecipe(UUID playerId, ResourceLocation craftingMachine, ItemStack output, ItemStack input, int width, int height) {
-        List<ItemStack> in = new ArrayList<>();
+    public static void addDefaultRecipe(UUID playerId, ResourceLocation craftingMachine, ItemStack output, Ingredient input, int width, int height) {
+        List<Ingredient> in = new ArrayList<>();
         List<ItemStack> out = new ArrayList<>();
         in.add(input);
         out.add(output);
         addDefaultRecipe(playerId, craftingMachine, out, in, width, height);
     }
-    public static void addDefaultRecipe(UUID playerId, List<ItemStack> input, ItemStack output, ResourceLocation craftingMachine, int width, int height) {
+    public static void addDefaultRecipe(UUID playerId, List<Ingredient> input, ItemStack output, ResourceLocation craftingMachine, int width, int height) {
         List<ItemStack> out = new ArrayList<>();
         out.add(output);
         addDefaultRecipe(playerId, craftingMachine, out, input, width, height);
     }
     //only added if it doesnt already exist
-    public static void addDefaultRecipe(UUID playerId, ResourceLocation craftingMachine, List<ItemStack> output, List<ItemStack> input, int width, int height)
+    public static void addDefaultRecipe(UUID playerId, ResourceLocation craftingMachine, List<ItemStack> output, List<Ingredient> input, int width, int height)
     {
         InventoryCrafting inv = new InventoryCrafting(null,width,height);
         ModRecipe blank =ModRecipe.EMPTY(craftingMachine);
@@ -165,8 +177,8 @@ public class ModRecipeRegistry {
             boolean empty =true;
 
             List<ModRecipe> recipes = new ArrayList<>();
-            for (ItemStack it: input)
-                if (it != ItemStack.EMPTY)
+            for (Ingredient it: input)
+                if (it != Ingredient.EMPTY)
                     empty = false;
             for (ItemStack it: output)
                 if (it != ItemStack.EMPTY)
@@ -179,7 +191,9 @@ public class ModRecipeRegistry {
                 recipes.add(new ModRecipe(craftingMachine, input, output,width,height, true));
                 playerRecipeList.put(playerId, recipes);
             }
-            else
+            else if(input.size() != 0 ||
+                    output.size() >0&& output.get(1).getItem() != Items.AIR
+                )
                 logger.warn("Cannot add Default Recipe: "+input.toString()+" result: "+output.toString());
         }
     }
@@ -203,15 +217,15 @@ public class ModRecipeRegistry {
             return recipes;
     }
 
-    public static int getMatchIndex(UUID playerId,ResourceLocation craftingMachine,List<ItemStack> ingredients)
+    public static int getMatchIndex(UUID playerId,ResourceLocation craftingMachine,List<Ingredient> ingredients)
     {
         if(!isPlayerMachineInRegistry(playerId,craftingMachine))
             return -1;
 
         List<ResourceLocation> ingItems = new ArrayList<>();
 
-        for (ItemStack itemStack : ingredients)
-            ingItems.add(itemStack.getItem().getRegistryName());
+        for (Ingredient itemStack : ingredients)
+            ingItems.add(itemStack.getMatchingStacks()[0].getItem().getRegistryName());//TODO loop through all getMatchingStacks
 
         //playerRecipeList.values();
 
@@ -220,8 +234,9 @@ public class ModRecipeRegistry {
         for (ModRecipe recipe : playerRecipeList.get(playerId))
         {
             List<ResourceLocation> sourceItems = new ArrayList<>();//recipe to compare
-            for (ItemStack it : recipe.getInputItemStacks())
-                sourceItems.add(it.getItem().getRegistryName());
+            for (Ingredient it : recipe.getInputIngredients())
+                if(it.getMatchingStacks().length >0)
+                    sourceItems.add(it.getMatchingStacks()[0].getItem().getRegistryName());//TODO add all getMatchingStacks() to sourceItem
 
 
             if (ingItems.size() == sourceItems.size()) //possible match
@@ -266,7 +281,7 @@ public class ModRecipeRegistry {
     }
     public static ItemStack getIngredientAsItemStack(Ingredient recipeItems) {
         if(recipeItems.getMatchingStacks().length >0)
-           return (new ItemStack( recipeItems.getMatchingStacks()[0].getItem()));//add recipe as a new itemstack from item
+            return (new ItemStack( recipeItems.getMatchingStacks()[0].getItem()));//add recipe as a new itemstack from item
         else
             return (ItemStack.EMPTY);
     }
@@ -321,7 +336,7 @@ public class ModRecipeRegistry {
         return recipeRegistry;//IDK if this is required
     }
 
-    public static List<ItemStack> tryToScramble(UUID playerId, ResourceLocation craftingBlock, InventoryCrafting inventoryCrafting, List<ItemStack> ingredient, boolean search)
+    public static List<ItemStack> tryToScramble(UUID playerId, ResourceLocation craftingBlock, InventoryCrafting inventoryCrafting, List<Ingredient> ingredient, boolean search)
     {
         List<ItemStack> newResultStack;
         boolean isSame;
@@ -343,12 +358,13 @@ public class ModRecipeRegistry {
             newResultStack = recipeList.get(newIndex).checkResult();
             for (ItemStack itemStack:newResultStack
             )
-                for (ItemStack it : ingredient) {
+                for (Ingredient it : ingredient) {
                     //old == new
-                    if (itemStack.getItem().getRegistryName() == it.getItem().getRegistryName() ||//the same recipe
-                            itemStack == new ItemStack(Items.AIR)//EMPTY!
-                    )
-                        isSame = true;
+                    for (ItemStack stack:it.getMatchingStacks())//Ingredient Options
+                        if (itemStack.getItem().getRegistryName() == stack.getItem().getRegistryName() ||//the same recipe
+                                itemStack == new ItemStack(Items.AIR))//EMPTY!
+                            isSame = true;
+
                 }
         } while (isSame && counter < overflow);
 
@@ -366,7 +382,7 @@ public class ModRecipeRegistry {
         return new ArrayList<>();//Why does java want this
     }
 
-    public static void randomizeRecipe(IInventory craftGrid, EntityPlayer entityPlayer, ResourceLocation craftingBlock, List<ItemStack> ingredient)
+    public static void randomizeRecipe(IInventory craftGrid, EntityPlayer entityPlayer, ResourceLocation craftingBlock, List<Ingredient> ingredient,Container container)
     {
         //dont scramble the first 2 recipes created
         if(getRecipeList(entityPlayer.getUniqueID(),craftingBlock).size() >2)
@@ -377,7 +393,9 @@ public class ModRecipeRegistry {
                     oldIndex != -1 &&
                             recipes.get(oldIndex).IsReady()
             ) {
-                List<ItemStack> newResultStack = tryToScramble(entityPlayer.getUniqueID(),craftingBlock,(InventoryCrafting) craftGrid,ingredient,true);
+                ModRecipe oldRecipe =playerRecipeList.get(entityPlayer.getUniqueID()).get(oldIndex);
+
+                List<ItemStack> newResultStack = tryToScramble(entityPlayer.getUniqueID(),craftingBlock,new InventoryCrafting(container,oldRecipe.getRecipeWidth(),oldRecipe.getRecipeHeight()),ingredient,true);
                 List<ItemStack> oldResultStack = recipes.get(oldIndex).checkResult();
 
                 //get Ingredients for recipes that use the output item
@@ -392,11 +410,22 @@ public class ModRecipeRegistry {
         }
     }
 
-    public static boolean recipeExists(UUID playerId, ResourceLocation craftingBlock,List<ItemStack> ingredients)
+    private static List<ItemStack> getIngredientAsItemStack(List<Ingredient> ingredients) {
+        List<ItemStack> converted =new ArrayList<>();
+        int i =0;
+        for (Ingredient it:ingredients) {
+            if(it.getMatchingStacks().length >0)
+            converted.add(it.getMatchingStacks()[0]);//using ingredient first item BAD
+            i++;
+        }
+        return converted;
+    }
+
+    public static boolean recipeExists(UUID playerId, ResourceLocation craftingBlock,List<Ingredient> ingredients)
     {
         List<ModRecipe> recipeList = ModRecipeRegistry.getRecipeList(playerId,craftingBlock);
         for (ModRecipe check:recipeList) {
-            List<ItemStack> checkStack = check.getInputItemStacks();
+            List<Ingredient> checkStack = check.getInputIngredients();
             if (ingredients.size() == checkStack.size()) {
                 boolean match = true;
                 for (int i = 0; i < checkStack.size(); i++) {

@@ -1,9 +1,5 @@
 package com.doorfail.scramblecraft.block.scramble_bench;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.gui.GuiButton;
@@ -17,6 +13,10 @@ import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.Rectangle;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RecipesGUIScrambleBench
         extends GuiButton
@@ -54,13 +54,13 @@ public class RecipesGUIScrambleBench
     int offsetY = this.height / 2 - 83;
     int widthX = 150; int heightY = 180; GL11.glScaled(0.85D, 1.0D, 1.0D);
     drawTexturedModalRect((int)(offsetX / 0.85D), offsetY, 1, 1, widthX, heightY);
-    GL11.glScaled(1.1764705882352942D, 1.0D, 1.0D); renderSmeltingRecipes(mc, mouseX, mouseY, offsetX + 6, offsetY + 24, widthX - 6, heightY - 48);
+    GL11.glScaled(1.1764705882352942D, 1.0D, 1.0D); renderRecipes(mc, mouseX, mouseY, offsetX + 6, offsetY + 24, widthX - 6, heightY - 48);
     GL11.glEnable(2896);
     GL11.glEnable(2929);
 
     RenderHelper.enableStandardItemLighting();
 }
-protected static final ResourceLocation RECIPE_BOOK = new ResourceLocation("textures/gui/recipe_book.png");
+protected static final ResourceLocation RECIPE_BOOK = new ResourceLocation("textures/recipe_book/recipe_book.png");
     Map<Rectangle, ItemStack> positions;
     public boolean mousePressed(Minecraft mc, int mouseX, int mouseY)
     {
@@ -81,7 +81,7 @@ protected static final ResourceLocation RECIPE_BOOK = new ResourceLocation("text
 
     Rectangle selected;
     boolean makeSound;
-    public void renderSmeltingRecipes(Minecraft mc, int mouseX, int mouseY, int posX, int posY, int sizeX, int sizeY)
+    public void renderRecipes(Minecraft mc, int mouseX, int mouseY, int posX, int posY, int sizeX, int sizeY)
     {
         if (this.itemRender == null)
         this.itemRender = mc.getRenderItem();

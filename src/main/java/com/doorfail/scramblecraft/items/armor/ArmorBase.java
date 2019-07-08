@@ -1,7 +1,7 @@
 package com.doorfail.scramblecraft.items.armor;
 
-import com.doorfail.scramblecraft.init.ModItems;
 import com.doorfail.scramblecraft.ScrambleCraft;
+import com.doorfail.scramblecraft.init.ModItems;
 import com.doorfail.scramblecraft.util.IHasModel;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.inventory.EntityEquipmentSlot;

@@ -10,7 +10,6 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.ContainerWorkbench;
 import net.minecraft.inventory.Slot;
 import net.minecraft.util.ResourceLocation;
 import org.apache.logging.log4j.LogManager;
@@ -21,7 +20,7 @@ import java.io.IOException;
 public class GUIScrambleBench extends GuiContainer implements IRecipeShownListener {
     private static Logger logger = LogManager.getLogger(Reference.MODID);
 
-    private static final ResourceLocation SCRAMBLE_BENCH_TEXTURE = new ResourceLocation(Reference.MODID + ":textures/gui/scramble_bench.png");
+    private static final ResourceLocation SCRAMBLE_BENCH_TEXTURE = new ResourceLocation(Reference.MODID + ":textures/recipe_book/scramble_bench.png");
     private final InventoryPlayer playerInv;
     private final TileEntityScrambleBench te;
 
