@@ -48,3 +48,7 @@ item.ruby_boots.name=Ruby Boots
 item.evil_apple.name=Evil Apple
 
 itemGroup.tutorialmodtab=Tutorial Tab
+
+gui.recipebook.moreRecipes=Right Click for more
+gui.recipebook.toggleRecipes.all=Showing all
+gui.recipebook.toggleRecipes.craftable=Showing craftable

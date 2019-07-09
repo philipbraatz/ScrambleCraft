@@ -139,12 +139,6 @@ public class ContainerScrambleBench extends Container
                         //ModRecipeRegistry.checkResult(ModRecipes.getIngredientAsItemStacks(shapedRecipe.getIngredients()),entityPlayer.getUniqueID(),ModBlocks.SCRAMBLE_BENCH.getRegistryName());
                         ItemStack returnItem = gridRecipe.craftItem(player,craftingGrid,this).get(0);
 
-                        ///TODO see if dupe is still a problem
-                        //if (returnItem.getCount() < 1)
-                        //    returnItem.setCount(1);
-                        //else if (returnItem.getCount() >= ModRecipeRegistry.previousStackSize * 2)//Temporary fix for output craft doubling
-                        //    returnItem.setCount(ModRecipeRegistry.previousStackSize);//will still dupe if output is less than double
-                        //ModRecipeRegistry.previousStackSize = returnItem.getCount();
                         craftedLast =true;
 
                         //server side

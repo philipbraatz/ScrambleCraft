@@ -1,5 +1,7 @@
 package com.doorfail.scramblecraft.block.scramble_bench;
 
+import com.doorfail.scramblecraft.init.ModBlocks;
+import com.doorfail.scramblecraft.recipe.recipe_book.GUIScrambleBook;
 import com.doorfail.scramblecraft.util.Reference;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiButtonImage;
@@ -16,6 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.util.UUID;
 
 public class GUIScrambleBench extends GuiContainer implements IRecipeShownListener {
     private static Logger logger = LogManager.getLogger(Reference.MODID);
@@ -23,19 +26,21 @@ public class GUIScrambleBench extends GuiContainer implements IRecipeShownListen
     private static final ResourceLocation SCRAMBLE_BENCH_TEXTURE = new ResourceLocation(Reference.MODID + ":textures/recipe_book/scramble_bench.png");
     private final InventoryPlayer playerInv;
     private final TileEntityScrambleBench te;
+    private final UUID playerId;
 
     //RecipeBook
     private GuiButtonImage recipeButton;
-    private final GuiRecipeBook recipeBookGui;
+    private final GUIScrambleBook recipeBookGui;
     private boolean widthTooNarrow;
 
     public GUIScrambleBench(InventoryPlayer playerInv, TileEntityScrambleBench benchInv, EntityPlayer player)
     {
         super(new ContainerScrambleBench(player.world, player.getPosition(),benchInv,player));
         this.playerInv = playerInv;
+        this.playerId = player.getUniqueID();
         this.te = benchInv;
 
-        this.recipeBookGui = new GuiRecipeBook();
+        this.recipeBookGui = new GUIScrambleBook();
 
         this.xSize = 175;
         this.ySize = 222;
@@ -45,7 +50,7 @@ public class GUIScrambleBench extends GuiContainer implements IRecipeShownListen
     public void initGui() {
         super.initGui();
         this.widthTooNarrow = this.width < 379;
-        this.recipeBookGui.func_194303_a(this.width, this.height, this.mc, this.widthTooNarrow, ((ContainerScrambleBench)this.inventorySlots).craftMatrix);
+        this.recipeBookGui.init(this.width, this.height, this.mc, this.widthTooNarrow, ((ContainerScrambleBench)this.inventorySlots).craftMatrix);
         this.guiLeft = this.recipeBookGui.updateScreenPosition(this.widthTooNarrow, this.width, this.xSize);
         this.recipeButton = new GuiButtonImage(10, this.guiLeft + 3, 60, 22, 22, 0, 168, 19, SCRAMBLE_BENCH_TEXTURE);
         this.buttonList.add(this.recipeButton);
@@ -109,7 +114,7 @@ public class GUIScrambleBench extends GuiContainer implements IRecipeShownListen
     @Override
     protected void actionPerformed(GuiButton button) throws IOException {
         if (button.id == 10) {
-            this.recipeBookGui.initVisuals(this.widthTooNarrow, ((ContainerScrambleBench)this.inventorySlots).craftMatrix);
+            this.recipeBookGui.initVisuals(this.widthTooNarrow, ((ContainerScrambleBench)this.inventorySlots).craftMatrix, ModBlocks.SCRAMBLE_BENCH.getRegistryName());
             this.recipeBookGui.toggleVisibility();
             this.guiLeft = this.recipeBookGui.updateScreenPosition(this.widthTooNarrow, this.width, this.xSize);
             this.recipeButton.setPosition(this.guiLeft + 5, this.height / 2 - 49);
@@ -144,6 +149,6 @@ public class GUIScrambleBench extends GuiContainer implements IRecipeShownListen
     //getGuiRecipeBook
     @Override
     public GuiRecipeBook func_194310_f() {
-        return this.recipeBookGui;
+        return this.recipeBookGui.toGuiRecipeBook();
     }
 }

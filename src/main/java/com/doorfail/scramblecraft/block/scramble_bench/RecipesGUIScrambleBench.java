@@ -18,17 +18,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.doorfail.scramblecraft.util.Reference.MODID;
+
 public class RecipesGUIScrambleBench
         extends GuiButton
 {
     RenderItem itemRender;
-    GuiFurnace parent;
+    GUIScrambleBench parent;
     List buttonList;
     boolean scroll;
     int scrollPosition;
     long lastscrollPosition;
 
-    public RecipesGUIScrambleBench(int buttonId, int x, int y, GuiFurnace parent, List buttonList) {
+    public RecipesGUIScrambleBench(int buttonId, int x, int y, GUIScrambleBench parent, List buttonList) {
         super(buttonId, x, y, "");
 
         this.scroll = false;
@@ -47,8 +49,10 @@ public class RecipesGUIScrambleBench
     this.height = this.parent.height; button.x = this.width / 2 - 84; button.y = this.height / 2 - 80;
 
     drawGradientRect(0, 0, 24, this.height, -1072689136, -804253680);
-    RenderHelper.disableStandardItemLighting(); GL11.glDisable(2896); GL11.glDisable(2929);
-    RenderHelper.enableGUIStandardItemLighting(); mc.getTextureManager().bindTexture(RECIPE_BOOK);
+    RenderHelper.disableStandardItemLighting();
+    GL11.glDisable(2896); GL11.glDisable(2929);
+    RenderHelper.enableGUIStandardItemLighting();
+    mc.getTextureManager().bindTexture(RECIPE_BOOK);
     GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
     int offsetX = this.width / 2 - 75 - 138;
     int offsetY = this.height / 2 - 83;
@@ -60,7 +64,7 @@ public class RecipesGUIScrambleBench
 
     RenderHelper.enableStandardItemLighting();
 }
-protected static final ResourceLocation RECIPE_BOOK = new ResourceLocation("textures/recipe_book/recipe_book.png");
+protected static final ResourceLocation RECIPE_BOOK = new ResourceLocation(MODID+":textures/recipe_book/recipe_book.png");
     Map<Rectangle, ItemStack> positions;
     public boolean mousePressed(Minecraft mc, int mouseX, int mouseY)
     {

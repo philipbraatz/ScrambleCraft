@@ -37,6 +37,8 @@ public class ModRecipeRegistry {
     private static int oldIndex =-1;
     public static int previousStackSize =222;//big stack number
 
+    private static int highestId =0;
+
     private static boolean isPlayerInRegistry(UUID playerId, boolean warn) {
         if (isPlayerInRegistry(playerId))
             return true;
@@ -69,6 +71,20 @@ public class ModRecipeRegistry {
             return false;
         }
     }
+
+    //if exists returns new Id
+    //otherwise create a new one
+    public static int getModRecipeId(ModRecipe recipe)
+    {
+        for (List<ModRecipe> recipeLists:playerRecipeList.values())
+            for (ModRecipe r : recipeLists)
+                if (r.matches(recipe))
+                    return r.getId();
+
+        highestId+=1;
+        return highestId;
+    }
+
     public static void addRecipe(int index,UUID playerId,ModRecipe recipe)
     {
         List<ModRecipe> recipes =new ArrayList<>();
@@ -298,6 +314,7 @@ public class ModRecipeRegistry {
     public static void init() {
         craftingManager.init();
         //removeRecipes(Blocks.CRAFTING_TABLE);
+        highestId = ((ForgeRegistry)ForgeRegistries.RECIPES).getValuesCollection().size()+8;
 
         ForgeRegistry<IRecipe> recipeRegistry = (ForgeRegistry<IRecipe>) ForgeRegistries.RECIPES;
         ArrayList<IRecipe> recipes = Lists.newArrayList(recipeRegistry.getValuesCollection());

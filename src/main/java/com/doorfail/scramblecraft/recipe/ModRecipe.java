@@ -15,6 +15,7 @@ import net.minecraft.nbt.NBTTagString;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.common.crafting.IShapedRecipe;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.registries.IForgeRegistryEntry;
@@ -26,8 +27,9 @@ import java.util.List;
 
 //single custom made recipe
 public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements IShapedRecipe {
-    private Logger logger;
+    private static Logger logger;
 
+    private int id;
     public ResourceLocation craftingMachine;
 
     private List<ItemStack> outputItemStacks= new ArrayList<>();
@@ -118,6 +120,13 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
             coolDown =0;
 
         ResetCoolDown();
+
+        id = ModRecipeRegistry.getModRecipeId(this);//last so it can be compared
+    }
+
+    public int getId()
+    {
+        return id;
     }
 
     public ModRecipe(NBTTagCompound compound)
@@ -246,11 +255,12 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
         return inventory;
     }
 
-    //@Override
-    //public boolean matches(InventoryCrafting inv, World worldIn) {
-    //    IShapedRecipe thisRecipe =this;
-    //    return thisRecipe.matches(inv,worldIn);
-    //}
+
+    public boolean matches(ModRecipe recipe) {
+        return recipe.outputItemStacks.equals(this.outputItemStacks) &&
+                recipe.inputIngredients.equals(this.inputIngredients) &&
+                recipe.craftingMachine.equals(this.craftingMachine);
+    }
 
     @Override
     public boolean matches(InventoryCrafting inv, World worldIn) {

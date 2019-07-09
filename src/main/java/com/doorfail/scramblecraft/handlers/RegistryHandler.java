@@ -35,9 +35,6 @@ public class RegistryHandler
     @SubscribeEvent
     public static void onModelRegister(ModelRegistryEvent event)
     {
-        //TODO remove v these 2 lines
-        ScrambleCraft.proxy.registerItemRenderer(Item.getItemFromBlock(ModBlocks.SCRAMBLE_BENCH), 0, "inventory");
-        ScrambleCraft.proxy.registerItemRenderer(Item.getItemFromBlock(ModBlocks.SCRAMBLE_FURNACE_OFF), 0, "inventory");
 
         for(Item item : ModItems.ITEMS)
             ScrambleCraft.proxy.registerItemRenderer(item, 0, "inventory");

@@ -30,8 +30,7 @@ import net.minecraftforge.common.crafting.IShapedRecipe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Iterator;
-import java.util.Random;
+import java.util.*;
 
 //import org.apache.logging.log4j.LogManager;
 //import org.apache.logging.log4j.Logger;
@@ -40,6 +39,8 @@ public class BlockScrambleBench extends BlockContainer
 {
     private static Logger logger = LogManager.getLogger(Reference.MODID);
     private static final PropertyDirection FACING = BlockHorizontal.FACING;
+
+    private static List<UUID> playersLoaded = new ArrayList<>();
 
     public BlockScrambleBench(String name)
     {
@@ -93,38 +94,41 @@ public class BlockScrambleBench extends BlockContainer
     }
 
     public void addCraftingTableRecipes() {
-        Iterator craftingRecipeIter = CraftingManager.REGISTRY.iterator();
+        UUID player =Minecraft.getMinecraft().player.getUniqueID();
+        if(!playersLoaded.contains(player)) {//only needs to be done once per server session
+            Iterator craftingRecipeIter = CraftingManager.REGISTRY.iterator();
 
-        IShapedRecipe entryShaped;
-        IRecipe entry;
-        do {
-            try {
-                Object temp =craftingRecipeIter.next();
+            IShapedRecipe entryShaped;
+            IRecipe entry;
+            do {
                 try {
-                    entryShaped = (IShapedRecipe)temp;
+                    Object temp = craftingRecipeIter.next();
+                    try {
+                        entryShaped = (IShapedRecipe) temp;
 
-                    ModRecipeRegistry.addDefaultRecipe(
-                            Minecraft.getMinecraft().player.getUniqueID(),
-                            entryShaped.getIngredients(),entryShaped.getRecipeOutput(),
-                            ModBlocks.SCRAMBLE_BENCH.getRegistryName(), entryShaped.getRecipeWidth(),entryShaped.getRecipeHeight());
+                        ModRecipeRegistry.addDefaultRecipe(
+                                player,
+                                entryShaped.getIngredients(), entryShaped.getRecipeOutput(),
+                                ModBlocks.SCRAMBLE_BENCH.getRegistryName(), entryShaped.getRecipeWidth(), entryShaped.getRecipeHeight());
 
-                } catch (Exception e)
-                {
-                    entry =(IRecipe)temp;
-                    ModRecipeRegistry.addDefaultRecipe(
-                            Minecraft.getMinecraft().player.getUniqueID(),
-                            entry.getIngredients(),entry.getRecipeOutput(),
-                            ModBlocks.SCRAMBLE_BENCH.getRegistryName(), 0,0);
+                        playersLoaded.add(player);
+
+                    } catch (Exception e) {
+                        entry = (IRecipe) temp;
+                        ModRecipeRegistry.addDefaultRecipe(
+                                Minecraft.getMinecraft().player.getUniqueID(),
+                                entry.getIngredients(), entry.getRecipeOutput(),
+                                ModBlocks.SCRAMBLE_BENCH.getRegistryName(), 0, 0);
+                    }
+
+
+                } catch (Exception e) {
+                    logger.error(e.getMessage());
                 }
 
 
-            } catch (Exception e)
-            {
-                logger.error(e.getMessage());
-            }
-
-
-        } while(craftingRecipeIter.hasNext());
+            } while (craftingRecipeIter.hasNext());
+        }
     }
 
     @Override
