@@ -4,4 +4,5 @@ All vanilla recipes still exist under there respective blocks, this mod simply r
 
 This mod is incompatible with JEI
 
-
+#License / Use in Modpacks
+This mod is licensed under the Don't Be a Jerk License created by CoFH. I herby grant permission to use this mod in any mod pack without the need to request permission from myself the owner (Doorfail).
