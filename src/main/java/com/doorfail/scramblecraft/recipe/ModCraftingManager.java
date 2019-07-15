@@ -99,7 +99,7 @@ public class ModCraftingManager extends CraftingManager {
             return ModRecipe.EMPTY(craftingBlock);//inventory was empty
 
         //try to match every recipe
-        List<ModRecipe> iter = ModRecipeRegistry.getRecipeList(playerId,craftingBlock);
+        List<ModRecipe> iter = ModRecipeRegistry.getModRecipeList(playerId,craftingBlock);
         if(iter != null || iter.size() != 0) {
             IRecipe irecipe;
             for (ModRecipe recipe: iter) {

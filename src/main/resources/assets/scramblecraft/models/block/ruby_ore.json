@@ -1,8 +1,0 @@
-
-{
-  "parent": "block/cube_all",
-  "textures": {
-    "all": "scramblecraft:blocks/ruby_ore",
-    "inventory": "scramblecraft:blocks/ruby_ore"
-  }
-}

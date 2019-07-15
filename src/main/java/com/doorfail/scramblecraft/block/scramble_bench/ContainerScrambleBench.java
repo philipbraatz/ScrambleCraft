@@ -4,6 +4,8 @@ package com.doorfail.scramblecraft.block.scramble_bench;
 import com.doorfail.scramblecraft.init.ModBlocks;
 import com.doorfail.scramblecraft.recipe.ModCraftingManager;
 import com.doorfail.scramblecraft.recipe.ModRecipe;
+import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.*;
@@ -15,6 +17,10 @@ import net.minecraft.world.World;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import static com.doorfail.scramblecraft.util.Reference.MODID;
 
 public class ContainerScrambleBench extends Container
@@ -23,7 +29,7 @@ public class ContainerScrambleBench extends Container
 
     /** The crafting matrix inventory (3x3). */
     public InventoryCrafting craftMatrix = new InventoryCrafting(this, 3, 3);
-    private InventoryCraftResult craftResult = new InventoryCraftResult();
+    public InventoryCraftResult craftResult = new InventoryCraftResult();
     private final World world;
     /** Position of the workbench */
     private final BlockPos pos;
@@ -31,6 +37,7 @@ public class ContainerScrambleBench extends Container
     private TileEntityScrambleBench benchInventory;
     private boolean craftedLast = false;
 
+    private static Map<UUID,EntityPlayerMP> playerMap = new HashMap<>();
 
     public ContainerScrambleBench(World world,BlockPos block, TileEntityScrambleBench benchInventory, EntityPlayer player)
     {
@@ -43,6 +50,8 @@ public class ContainerScrambleBench extends Container
         //    ModCraftingManager.loadRecipes(this.player, ModBlocks.SCRAMBLE_BENCH.getRegistryName());
         //}
 
+        if (!player.world.isRemote && !playerMap.containsKey(player.getUniqueID()))
+            playerMap.put(player.getUniqueID(),(EntityPlayerMP) player);
 
         //output
         this.addSlotToContainer(new SlotCrafting(player, this.craftMatrix, this.craftResult, 0, 124, 35));
@@ -90,6 +99,8 @@ public class ContainerScrambleBench extends Container
     {
         if (!playerIn.world.isRemote)
         {
+            if(playerMap.containsKey(player.getUniqueID()))
+                playerMap.remove(player.getUniqueID());
             //this.clearContainer(playerIn, playerIn.world, this.craftMatrix);
         }
 
@@ -119,11 +130,14 @@ public class ContainerScrambleBench extends Container
     }
 
     @Override
-    protected void slotChangedCraftingGrid(World world, EntityPlayer entityPlayer, InventoryCrafting craftingGrid, InventoryCraftResult craftResult)
+    protected void slotChangedCraftingGrid(World world, EntityPlayer entityPlayer, InventoryCrafting craftingGrid, InventoryCraftResult IncraftResult)
     {
         if (!world.isRemote)
         {
             EntityPlayerMP entityplayermp = (EntityPlayerMP)entityPlayer;
+            if (!playerMap.containsKey(entityplayermp.getUniqueID()))
+                playerMap.put(entityplayermp.getUniqueID(),entityplayermp);
+
             ModRecipe  gridRecipe = ModCraftingManager.findMatchingRecipe(entityPlayer.getUniqueID(), ModBlocks.SCRAMBLE_BENCH.getRegistryName(), craftMatrix);
             if(gridRecipe.checkResult().size() == 1)//Crafting result of a single stack
             {
@@ -134,15 +148,21 @@ public class ContainerScrambleBench extends Container
                             || entityplayermp.getRecipeBook().isUnlocked(gridRecipe))
                     {
                         //set ingredients used
-                        craftResult.setRecipeUsed(gridRecipe);
+                        IncraftResult.setRecipeUsed(gridRecipe);
 
                         //ModRecipeRegistry.checkResult(ModRecipes.getIngredientAsItemStacks(shapedRecipe.getIngredients()),entityPlayer.getUniqueID(),ModBlocks.SCRAMBLE_BENCH.getRegistryName());
                         ItemStack returnItem = gridRecipe.craftItem(player,craftingGrid,this).get(0);
 
+                        //TODO dupe is still a problem
+                        if (returnItem.getCount() < 1)
+                            returnItem.setCount(1);
+                        else if (returnItem.getCount() >= ModRecipeRegistry.previousStackSize * 2)//Temporary fix for output craft doubling
+                            returnItem.setCount(ModRecipeRegistry.previousStackSize);//will still dupe if output is less than double
+                        ModRecipeRegistry.previousStackSize = returnItem.getCount();
                         craftedLast =true;
 
                         //server side
-                        craftResult.setInventorySlotContents(0, returnItem);
+                        IncraftResult.setInventorySlotContents(0, returnItem);
                         //visual inside crafting table
                         entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, 0, returnItem));
 
@@ -150,16 +170,16 @@ public class ContainerScrambleBench extends Container
 
                 }catch (Exception e)
                 {
-                    logger.info(e.getLocalizedMessage());
+                    logger.info(e.getCause());
                 }
             }
             else
             {
                 //Invalid Recipe
-                logger.info("Crafted = "+craftedLast);
+                //logger.info("Crafted = "+craftedLast);
                 craftedLast =false;
 
-                craftResult.setInventorySlotContents(0, ItemStack.EMPTY);
+                IncraftResult.setInventorySlotContents(0, ItemStack.EMPTY);
                 //visual inside crafting table
                 entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, 0,  ItemStack.EMPTY));
 
@@ -184,6 +204,9 @@ public class ContainerScrambleBench extends Container
      */
     @Override
     public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
+        if (!player.world.isRemote && !playerMap.containsKey(player.getUniqueID()))
+            playerMap.put(player.getUniqueID(),(EntityPlayerMP) player);
+
         ItemStack itemstack = ItemStack.EMPTY;
         Slot slot = this.inventorySlots.get(index);
         if (slot != null && slot.getHasStack())
@@ -204,5 +227,18 @@ public class ContainerScrambleBench extends Container
         }
 
         return itemstack;
+    }
+
+    public static EntityPlayerMP getEntityPlayerMP(UUID playerId)
+    {
+        try{
+            if(playerMap.containsKey(playerId))
+                return playerMap.get(playerId);
+            else
+                throw new Exception("Player with ID:"+playerId.toString()+" does not exist");
+        }catch (Exception e){
+            return null;
+        }
+
     }
 }

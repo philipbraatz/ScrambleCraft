@@ -1,7 +1,7 @@
 package com.doorfail.scramblecraft.block.scramble_bench;
 
 import com.doorfail.scramblecraft.init.ModBlocks;
-import com.doorfail.scramblecraft.recipe.recipe_book.GUIScrambleBook;
+import com.doorfail.scramblecraft.recipe.recipe_book.gui.GUIScrambleBook;
 import com.doorfail.scramblecraft.util.Reference;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiButtonImage;
@@ -146,9 +146,9 @@ public class GUIScrambleBench extends GuiContainer implements IRecipeShownListen
         super.onGuiClosed();
     }
 
-    //getGuiRecipeBook
+    //doesnt actually do anything
     @Override
     public GuiRecipeBook func_194310_f() {
-        return this.recipeBookGui.toGuiRecipeBook();
+        return new GuiRecipeBook();
     }
 }

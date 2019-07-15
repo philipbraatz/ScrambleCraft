@@ -22,7 +22,7 @@ public class ScrambleBenchRecipeMaker {
         List<JEIScrambleBenchRecipe> jeiRecipes =new ArrayList<>();
         List<DynamicItemStack> ingredients = new ArrayList<>();
 
-        List<ModRecipe> recipes = ModRecipeRegistry.getRecipeList(playerId, ModBlocks.SCRAMBLE_BENCH.getRegistryName());
+        List<ModRecipe> recipes = ModRecipeRegistry.getModRecipeList(playerId, ModBlocks.SCRAMBLE_BENCH.getRegistryName());
         for (ModRecipe sbr:recipes ) {
             for (ItemStack it: sbr.checkResult())
                 ingredients.add(new DynamicItemStack(it));

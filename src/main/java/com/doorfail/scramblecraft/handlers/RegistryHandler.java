@@ -5,7 +5,6 @@ import com.doorfail.scramblecraft.init.ModBlocks;
 import com.doorfail.scramblecraft.init.ModItems;
 import com.doorfail.scramblecraft.init.ModOreDictionary;
 import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
-import com.doorfail.scramblecraft.world.ModWorldGen;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.client.event.ModelRegistryEvent;
@@ -47,14 +46,7 @@ public class RegistryHandler
 
     public static void preInitRegistries()
     {
-        //ModFluids.registerFluids();
-        RenderHandler.registerCustomMeshesAndStates();
-        //ModBiomes.registerBiomes();
-        GameRegistry.registerWorldGenerator(new ModWorldGen(), 3);
-        //ModEntities.registerEntities();
-        RenderHandler.registerEntityRenders();
-        EventHandler.registerEvents();
-        SoundsHandler.registerSounds();
+        //handlers
     }
 
     public static void initRegistries()

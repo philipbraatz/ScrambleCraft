@@ -11,6 +11,5 @@ public class TileEntityHandler {
     {
         GameRegistry.registerTileEntity(TileEntityScrambleBench.class, new ResourceLocation(Reference.MODID + ":scramble_bench"));
         GameRegistry.registerTileEntity(TileEntityScrambleFurnace.class, new ResourceLocation(Reference.MODID + ":scramble_furnace"));
-        //GameRegistry.registerTileEntity(TileEntitySilverFurnace.class, new ResourceLocation(Reference.MODID + ":silver_furnace"));
     }
 }

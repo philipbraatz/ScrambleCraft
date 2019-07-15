@@ -1,11 +1,19 @@
 package com.doorfail.scramblecraft.recipe.recipe_book;
 
+import com.doorfail.scramblecraft.block.scramble_bench.ContainerScrambleBench;
+import com.doorfail.scramblecraft.init.ModBlocks;
+import com.doorfail.scramblecraft.recipe.ModRecipe;
+import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
+import com.doorfail.scramblecraft.recipe.recipe_book.gui.GUIButtonScrambleRecipe;
+import com.doorfail.scramblecraft.recipe.recipe_book.gui.GUIScrambleBook;
+import com.doorfail.scramblecraft.recipe.recipe_book.gui.GUIScrambleRecipeMiniWindow;
+import com.doorfail.scramblecraft.util.ServerScrambleBookHelper;
 import com.google.common.collect.Lists;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButtonToggle;
 import net.minecraft.client.gui.recipebook.IRecipeUpdateListener;
 import net.minecraft.client.renderer.RenderHelper;
-import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.stats.RecipeBook;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -17,7 +25,7 @@ import java.util.List;
 public class ScrambleBookPage {
     public List<GUIButtonScrambleRecipe> buttons = Lists.newArrayListWithCapacity(20);
     private GUIButtonScrambleRecipe hoveredButton;
-    private GUIScrambleRecipeOverlay overlay = new GUIScrambleRecipeOverlay();
+    private GUIScrambleRecipeMiniWindow overlay = new GUIScrambleRecipeMiniWindow();
     private Minecraft minecraft;
     private List<IRecipeUpdateListener> listeners = Lists.newArrayList();
     private List<ScrambleList> recipeLists;
@@ -25,18 +33,20 @@ public class ScrambleBookPage {
     private GuiButtonToggle backButton;
     private int totalPages;
     private int currentPage;
-    private ScrambleBook scrambleBook;
-    private IRecipe lastClickedRecipe;
+    private RecipeBook scrambleBook;
+    private ModRecipe lastClickedRecipe;
     private ScrambleList lastClickedRecipeList;
+    private ServerScrambleBookHelper serverHelper;
 
     public ScrambleBookPage() {
         for(int i = 0; i < 20; ++i) buttons.add(new GUIButtonScrambleRecipe());
 
     }
 
-    public void init(Minecraft mc, int x, int y) {
+    public void init(Minecraft mc, int x, int y, ServerScrambleBookHelper helper) {
         this.minecraft = mc;
-        this.scrambleBook = new ScrambleBook(mc.player.getRecipeBook());//Inject recipes here
+        this.scrambleBook = mc.player.getRecipeBook();//Inject recipes here
+        this.serverHelper =helper;
 
         for(int i = 0; i < this.buttons.size(); ++i) {
             (this.buttons.get(i)).setPosition(x + 11 + 25 * (i % 5), y + 31 + 25 * (i / 5));
@@ -53,6 +63,7 @@ public class ScrambleBookPage {
         this.listeners.add(book);
     }
 
+    //Tab Change
     public void updateLists(List<ScrambleList> recipeLists, boolean goToFirstPage) {
         this.recipeLists = recipeLists;
         this.totalPages = (int)Math.ceil((double)recipeLists.size() / 20.0D);
@@ -63,12 +74,14 @@ public class ScrambleBookPage {
         this.updateButtonsForPage();
     }
 
+    //Page Change
     private void updateButtonsForPage() {
         int i = 20 * this.currentPage;
 
         for(int j = 0; j < this.buttons.size(); ++j) {
             GUIButtonScrambleRecipe guibuttonrecipe = this.buttons.get(j);
-            if (i + j < this.recipeLists.size()) {
+            if (this.recipeLists != null &&
+                    i + j < this.recipeLists.size()) {
                 ScrambleList recipelist = this.recipeLists.get(i + j);
                 guibuttonrecipe.init(recipelist, this, this.scrambleBook);
                 guibuttonrecipe.visible = true;
@@ -117,7 +130,7 @@ public class ScrambleBookPage {
     }
 
     @Nullable
-    public IRecipe getLastClickedRecipe() {
+    public ModRecipe getLastClickedRecipe() {
         return this.lastClickedRecipe;
     }
 
@@ -130,29 +143,34 @@ public class ScrambleBookPage {
         this.overlay.setVisible(false);
     }
 
-    public boolean mouseClicked(int p_194196_1_, int p_194196_2_, int p_194196_3_, int p_194196_4_, int p_194196_5_, int p_194196_6_, int p_194196_7_) {
+    public boolean mouseClicked(int x, int y, int time, int f1In, int f5In, int f1Half, int f5Half) {
         this.lastClickedRecipe = null;
         this.lastClickedRecipeList = null;
-        if (this.overlay.isVisible()) {
-            if (this.overlay.buttonClicked(p_194196_1_, p_194196_2_, p_194196_3_)) {
+        if (this.overlay.isVisible())
+        {
+            if (this.overlay.buttonClicked(x, y, time)) {
                 this.lastClickedRecipe = this.overlay.getLastRecipeClicked();
                 this.lastClickedRecipeList = this.overlay.getRecipeList();
-            } else {
-                this.overlay.setVisible(false);
-            }
+            } else this.overlay.setVisible(false);
 
             return true;
-        } else if (this.forwardButton.mousePressed(this.minecraft, p_194196_1_, p_194196_2_) && p_194196_3_ == 0) {
+        }
+        else if (this.forwardButton.mousePressed(this.minecraft, x, y) && time == 0) //Forward
+        {
             this.forwardButton.playPressSound(this.minecraft.getSoundHandler());
             ++this.currentPage;
             this.updateButtonsForPage();
             return true;
-        } else if (this.backButton.mousePressed(this.minecraft, p_194196_1_, p_194196_2_) && p_194196_3_ == 0) {
+        }
+        else if (this.backButton.mousePressed(this.minecraft, x, y) && time == 0) //Back
+        {
             this.backButton.playPressSound(this.minecraft.getSoundHandler());
             --this.currentPage;
             this.updateButtonsForPage();
             return true;
-        } else {
+        }
+        else
+        {
             Iterator var8 = this.buttons.iterator();
 
             GUIButtonScrambleRecipe guibuttonrecipe;
@@ -162,16 +180,20 @@ public class ScrambleBookPage {
                 }
                 guibuttonrecipe = (GUIButtonScrambleRecipe)var8.next();
 
-            } while(!guibuttonrecipe.mousePressed(this.minecraft, p_194196_1_, p_194196_2_));
+            } while(!guibuttonrecipe.mousePressed(this.minecraft, x, y));
 
             guibuttonrecipe.playPressSound(this.minecraft.getSoundHandler());
-            if (p_194196_3_ == 0) {
-                this.lastClickedRecipe = guibuttonrecipe.getRecipe();
-                this.lastClickedRecipeList = guibuttonrecipe.getList();
+            serverHelper.placeRecipe(ContainerScrambleBench.getEntityPlayerMP(minecraft.player.getUniqueID()),guibuttonrecipe.getRecipe(),false);
+
+            if (time == 0) {
+                this.lastClickedRecipe = ModRecipeRegistry.getMatchingModRecipe(
+                        Minecraft.getMinecraft().player.getUniqueID(),
+                        ModBlocks.SCRAMBLE_BENCH.getRegistryName(),guibuttonrecipe.getRecipe());
+                this.lastClickedRecipeList = guibuttonrecipe.getScrambleList();
             } else if (!this.overlay.isVisible() && !guibuttonrecipe.isOnlyOption()) {
-                this.overlay.init(this.minecraft, guibuttonrecipe.getList(),
+                this.overlay.init(this.minecraft, guibuttonrecipe.getScrambleList(),
                         guibuttonrecipe.x, guibuttonrecipe.y,
-                        p_194196_4_ + p_194196_6_ / 2, p_194196_5_ + 13 + p_194196_7_ / 2,
+                        f1In + f1Half / 2, f5In + 13 + f5Half / 2,
                         (float)guibuttonrecipe.getButtonWidth(),this.scrambleBook);
             }
 
@@ -179,12 +201,12 @@ public class ScrambleBookPage {
         }
     }
 
-    public void recipesShown(List<IRecipe> recipes) {
+    public void recipesShown(List<ModRecipe> recipes) {
         Iterator var2 = this.listeners.iterator();
 
         while(var2.hasNext()) {
             IRecipeUpdateListener irecipeupdatelistener = (IRecipeUpdateListener)var2.next();
-            irecipeupdatelistener.recipesShown(recipes);
+            irecipeupdatelistener.recipesShown(ModRecipeRegistry.getIRecipeList(recipes));
         }
 
     }

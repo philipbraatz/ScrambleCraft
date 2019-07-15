@@ -1,7 +1,12 @@
-package com.doorfail.scramblecraft.recipe.recipe_book;
+package com.doorfail.scramblecraft.recipe.recipe_book.gui;
 
 import com.doorfail.scramblecraft.init.ModBlocks;
+import com.doorfail.scramblecraft.recipe.ModRecipe;
+import com.doorfail.scramblecraft.recipe.recipe_book.ScrambleBookClient;
+import com.doorfail.scramblecraft.recipe.recipe_book.ScrambleBookPage;
+import com.doorfail.scramblecraft.recipe.recipe_book.ScrambleList;
 import com.doorfail.scramblecraft.util.Reference;
+import com.doorfail.scramblecraft.util.ServerScrambleBookHelper;
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
@@ -10,7 +15,6 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButtonToggle;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
-import net.minecraft.client.gui.recipebook.*;
 import net.minecraft.client.gui.recipebook.GhostRecipe.GhostIngredient;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
@@ -21,12 +25,15 @@ import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.util.RecipeItemHelper;
 import net.minecraft.client.util.SearchTreeManager;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.network.play.client.CPacketRecipeInfo;
+import net.minecraft.stats.RecipeBook;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.resource.IResourceType;
 import net.minecraftforge.client.resource.VanillaResourceType;
@@ -41,34 +48,35 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+//Main scrambleBook
 @SideOnly(Side.CLIENT)
-public class GUIScrambleBook extends Gui implements IRecipeUpdateListener {
-    protected static final ResourceLocation RECIPE_BOOK = new ResourceLocation(Reference.MODID + ":textures/recipe_book/recipe_book.png");
+public class GUIScrambleBook extends Gui implements net.minecraft.client.gui.recipebook.IRecipeUpdateListener {
+    public static final ResourceLocation RECIPE_BOOK = new ResourceLocation(Reference.MODID + ":textures/recipe_book/recipe_book.png");
     private int xOffset;
     private int width;
     private int height;
-    private final GhostRecipe ghostRecipe = new GhostRecipe();
-    private final List<GuiButtonRecipeTab> recipeTabs;
-    private GuiButtonRecipeTab currentTab;
+    private final net.minecraft.client.gui.recipebook.GhostRecipe ghostRecipe = new net.minecraft.client.gui.recipebook.GhostRecipe();
+    private final List<net.minecraft.client.gui.recipebook.GuiButtonRecipeTab> recipeTabs;
+    private net.minecraft.client.gui.recipebook.GuiButtonRecipeTab currentTab;
     private GuiButtonToggle toggleRecipesBtn;
     private InventoryCrafting craftingSlots;
     private Minecraft mc;
     private GuiTextField searchBar;
     private String lastSearch;
-    private ScrambleBook recipeBook;
+    private RecipeBook recipeBook;
     private final ScrambleBookPage scrambleBookPage;
     private RecipeItemHelper stackedContents;
     private int timesInventoryChanged;
 
+    private ServerScrambleBookHelper serverHelper=new ServerScrambleBookHelper();
+
     public GUIScrambleBook() {
         this.recipeTabs = Lists.newArrayList(
-                new GuiButtonRecipeTab[]{
-                        new GuiButtonRecipeTab(0, CreativeTabs.SEARCH),
-                        new GuiButtonRecipeTab(0, CreativeTabs.TOOLS),
-                        new GuiButtonRecipeTab(0, CreativeTabs.BUILDING_BLOCKS),
-                        new GuiButtonRecipeTab(0, CreativeTabs.MISC),
-                        new GuiButtonRecipeTab(0, CreativeTabs.REDSTONE)
-                });
+                new net.minecraft.client.gui.recipebook.GuiButtonRecipeTab(0, CreativeTabs.SEARCH),
+                new net.minecraft.client.gui.recipebook.GuiButtonRecipeTab(0, CreativeTabs.TOOLS),
+                new net.minecraft.client.gui.recipebook.GuiButtonRecipeTab(0, CreativeTabs.BUILDING_BLOCKS),
+                new net.minecraft.client.gui.recipebook.GuiButtonRecipeTab(0, CreativeTabs.MISC),
+                new net.minecraft.client.gui.recipebook.GuiButtonRecipeTab(0, CreativeTabs.REDSTONE));
         this.lastSearch = "";
         this.scrambleBookPage = new ScrambleBookPage();
         this.stackedContents = new RecipeItemHelper();
@@ -79,7 +87,7 @@ public class GUIScrambleBook extends Gui implements IRecipeUpdateListener {
         this.width = width;
         this.height = height;
         this.craftingSlots = inventory;
-        this.recipeBook = new ScrambleBook (mc.player.getRecipeBook());
+        this.recipeBook = mc.player.getRecipeBook();
         this.timesInventoryChanged = mc.player.inventory.getTimesChanged();
         this.currentTab = this.recipeTabs.get(0);
         this.currentTab.setStateTriggered(true);
@@ -88,12 +96,6 @@ public class GUIScrambleBook extends Gui implements IRecipeUpdateListener {
         }
 
         Keyboard.enableRepeatEvents(true);
-    }
-
-    //DO NOT USE
-    public GuiRecipeBook toGuiRecipeBook()
-    {
-        return new GuiRecipeBook();
     }
 
     public void initVisuals(boolean p_193014_1_, InventoryCrafting p_193014_2_, ResourceLocation registryName) {
@@ -108,7 +110,7 @@ public class GUIScrambleBook extends Gui implements IRecipeUpdateListener {
         this.searchBar.setEnableBackgroundDrawing(false);
         this.searchBar.setVisible(true);
         this.searchBar.setTextColor(16777215);
-        this.scrambleBookPage.init(this.mc, i, j);
+        this.scrambleBookPage.init(this.mc, i, j,serverHelper);
         this.scrambleBookPage.addListener(this);
         this.toggleRecipesBtn = new GuiButtonToggle(0, i + 110, j + 12, 26, 16, this.recipeBook.isFilteringCraftable());
         this.toggleRecipesBtn.initTextureValues(152, 41, 28, 18, RECIPE_BOOK);
@@ -158,33 +160,51 @@ public class GUIScrambleBook extends Gui implements IRecipeUpdateListener {
 
     }
 
+    //UPDATER
     private void updateCollections(boolean firstPage, ResourceLocation craftingBlock) {
-        List<ScrambleList> list = ScrambleList.loadAllRecipes(mc.player.getUniqueID(),craftingBlock);//ScrambleList.fromRecipeList(RecipeBookClient.RECIPES_BY_TAB.get(this.currentTab.getCategory()), recipeBook);
-        list.forEach((recipe) -> {
-            recipe.canCraft(this.stackedContents, this.craftingSlots.getWidth(), this.craftingSlots.getHeight(), this.recipeBook);
-        });
+        //this.currentTab = recipeTabs.get(2);
+        if(ScrambleBookClient.RECIPES_BY_TAB.size() >0)
+        {
 
-        List<ScrambleList> list1 = Lists.newArrayList(list);
-        //Remove all empty recipes and Invalid recipes
-        list1.removeIf((recipe) -> {
-            return !recipe.isNotEmpty() || !recipe.containsValidRecipes();
-        });
+            List<ScrambleList> list = ScrambleBookClient.RECIPES_BY_TAB.get(this.currentTab.getCategory());
 
-        String s = this.searchBar.getText();
-        if (!s.isEmpty()) {
-            ObjectSet<ScrambleList> objectset = new ObjectLinkedOpenHashSet(this.mc.getSearchTree(SearchTreeManager.RECIPES).search(s.toLowerCase(Locale.ROOT)));
-            list1.removeIf((recipe) -> {
-                return !objectset.contains(recipe);
-            });
+            //Dont know how this become empty
+            if(list.size() ==0) {
+                ScrambleBookClient.rebuildTable();
+                list = ScrambleBookClient.RECIPES_BY_TAB.get(this.currentTab.getCategory());
+            }
+            List<ScrambleList> list1 = Lists.newArrayList(list);
+
+            Iterator iterList = list.iterator();
+            while (iterList.hasNext())
+            {
+                ScrambleList scrambleList =(ScrambleList) iterList.next();
+                for (ModRecipe r:scrambleList.getRecipes())
+                    if (r.checkResult().get(0).getItem() == Items.AIR) {
+                        ScrambleBookClient.rebuildTable();//update recipe all outputs every time AIR is show as craftable
+                        list1 = ScrambleBookClient.RECIPES_BY_TAB.get(this.currentTab.getCategory());//update local list
+                    }
+
+                scrambleList.canCraft(this.stackedContents, this.craftingSlots.getWidth(), this.craftingSlots.getHeight(), this.recipeBook);
+            }
+
+            //Search Bar Sorting
+            String s = this.searchBar.getText();
+            if (!s.isEmpty()) {//TODO Reimplement search functionality
+                ObjectSet<ScrambleList> objectset = new ObjectLinkedOpenHashSet(this.mc.getSearchTree(SearchTreeManager.RECIPES).search(s.toLowerCase(Locale.ROOT)));
+                list1.removeIf((recipe) -> {
+                    return !objectset.contains(recipe);
+                });
+            }
+
+            if (this.recipeBook.isFilteringCraftable()) {
+                list1.removeIf((recipe) -> {
+                    return !recipe.containsCraftableRecipes();
+                });
+            }
+
+            this.scrambleBookPage.updateLists(list1, firstPage);
         }
-
-        if (this.recipeBook.isFilteringCraftable()) {
-            list1.removeIf((recipe) -> {
-                return !recipe.containsCraftableRecipes();
-            });
-        }
-
-        this.scrambleBookPage.updateLists(list1, firstPage);
     }
 
     private void updateTabs() {
@@ -195,7 +215,7 @@ public class GUIScrambleBook extends Gui implements IRecipeUpdateListener {
         Iterator var5 = this.recipeTabs.iterator();
 
         while(var5.hasNext()) {
-            GuiButtonRecipeTab guibuttonrecipetab = (GuiButtonRecipeTab)var5.next();
+            net.minecraft.client.gui.recipebook.GuiButtonRecipeTab guibuttonrecipetab = (net.minecraft.client.gui.recipebook.GuiButtonRecipeTab)var5.next();
             CreativeTabs creativetabs = guibuttonrecipetab.getCategory();
             if (creativetabs == CreativeTabs.SEARCH) {
                 guibuttonrecipetab.visible = true;
@@ -223,6 +243,7 @@ public class GUIScrambleBook extends Gui implements IRecipeUpdateListener {
         this.updateCollections(false, ModBlocks.SCRAMBLE_BENCH.getRegistryName());
     }
 
+    //Draws RecipeBook Window and tabs
     public void render(int mouseX, int mouseY, float partialTicks) {
         if (this.isVisible()) {
             RenderHelper.enableGUIStandardItemLighting();
@@ -236,11 +257,12 @@ public class GUIScrambleBook extends Gui implements IRecipeUpdateListener {
             this.drawTexturedModalRect(i, j, 1, 1, 147, 166);
             this.searchBar.drawTextBox();
             RenderHelper.disableStandardItemLighting();
-            Iterator var6 = this.recipeTabs.iterator();
 
+            //Tabs
+            Iterator var6 = this.recipeTabs.iterator();
             while(var6.hasNext()) {
-                GuiButtonRecipeTab guibuttonrecipetab = (GuiButtonRecipeTab)var6.next();
-                guibuttonrecipetab.drawButton(this.mc, mouseX, mouseY, partialTicks);
+                net.minecraft.client.gui.recipebook.GuiButtonRecipeTab guiRecipeTabButton = (net.minecraft.client.gui.recipebook.GuiButtonRecipeTab)var6.next();
+                guiRecipeTabButton.drawButton(this.mc, mouseX, mouseY, partialTicks);
             }
 
             this.toggleRecipesBtn.drawButton(this.mc, mouseX, mouseY, partialTicks);
@@ -254,7 +276,7 @@ public class GUIScrambleBook extends Gui implements IRecipeUpdateListener {
         if (this.isVisible()) {
             this.scrambleBookPage.renderTooltip(width, height);
             if (this.toggleRecipesBtn.isMouseOver()) {
-                String s1 = I18n.format(this.toggleRecipesBtn.isStateTriggered() ? "recipe_book.recipebook.toggleRecipes.craftable" : "recipe_book.recipebook.toggleRecipes.all", new Object[0]);
+                String s1 = I18n.format(this.toggleRecipesBtn.isStateTriggered() ? "Craftable" : "All", new Object[0]);
                 if (this.mc.currentScreen != null) {
                     this.mc.currentScreen.drawHoveringText(s1, width, height);
                 }
@@ -269,11 +291,11 @@ public class GUIScrambleBook extends Gui implements IRecipeUpdateListener {
         ItemStack itemstack = null;
 
         for(int i = 0; i < this.ghostRecipe.size(); ++i) {
-            GhostIngredient ghostrecipe$ghostingredient = this.ghostRecipe.get(i);
-            int j = ghostrecipe$ghostingredient.getX() + p_193015_1_;
-            int k = ghostrecipe$ghostingredient.getY() + p_193015_2_;
+            GhostIngredient ghostIngredient = this.ghostRecipe.get(i);
+            int j = ghostIngredient.getX() + p_193015_1_;
+            int k = ghostIngredient.getY() + p_193015_2_;
             if (p_193015_3_ >= j && p_193015_4_ >= k && p_193015_3_ < j + 16 && p_193015_4_ < k + 16) {
-                itemstack = ghostrecipe$ghostingredient.getItem();
+                itemstack = ghostIngredient.getItem();
             }
         }
 
@@ -287,9 +309,14 @@ public class GUIScrambleBook extends Gui implements IRecipeUpdateListener {
         this.ghostRecipe.render(this.mc, p_191864_1_, p_191864_2_, p_191864_3_, p_191864_4_);
     }
 
-    public boolean mouseClicked(int p_191862_1_, int p_191862_2_, int p_191862_3_) {
+    public boolean mouseClicked(int x, int y, int time) {
         if (this.isVisible() && !this.mc.player.isSpectator()) {
-            if (this.scrambleBookPage.mouseClicked(p_191862_1_, p_191862_2_, p_191862_3_, (this.width - 147) / 2 - this.xOffset, (this.height - 166) / 2, 147, 166)) {
+            if (this.scrambleBookPage.mouseClicked(
+                    x, y, time,
+                    (this.width - 147) / 2 - this.xOffset,
+                    (this.height - 166) / 2,
+                    147, 166))
+            {
                 IRecipe irecipe = this.scrambleBookPage.getLastClickedRecipe();
                 ScrambleList recipelist = this.scrambleBookPage.getLastClickedRecipeList();
                 if (irecipe != null && recipelist != null) {
@@ -299,17 +326,18 @@ public class GUIScrambleBook extends Gui implements IRecipeUpdateListener {
 
                     this.ghostRecipe.clear();
                     this.mc.playerController.func_194338_a(this.mc.player.openContainer.windowId, irecipe, GuiScreen.isShiftKeyDown(), this.mc.player);
-                    if (!this.isOffsetNextToMainGUI() && p_191862_3_ == 0) {
+                    if (!this.isOffsetNextToMainGUI() && time == 0) {
                         this.setVisible(false);
                     }
                 }
 
                 return true;
-            } else if (p_191862_3_ != 0) {
+            } else if (time != 0)
                 return false;
-            } else if (this.searchBar.mouseClicked(p_191862_1_, p_191862_2_, p_191862_3_)) {
+            else if (this.searchBar.mouseClicked(x, y, time))
                 return true;
-            } else if (this.toggleRecipesBtn.mousePressed(this.mc, p_191862_1_, p_191862_2_)) {
+            else if (this.toggleRecipesBtn.mousePressed(this.mc, x, y))
+            {
                 boolean flag = !this.recipeBook.isFilteringCraftable();
                 this.recipeBook.setFilteringCraftable(flag);
                 this.toggleRecipesBtn.setStateTriggered(flag);
@@ -320,14 +348,14 @@ public class GUIScrambleBook extends Gui implements IRecipeUpdateListener {
             } else {
                 Iterator var4 = this.recipeTabs.iterator();
 
-                GuiButtonRecipeTab guibuttonrecipetab;
+                net.minecraft.client.gui.recipebook.GuiButtonRecipeTab guibuttonrecipetab;
                 do {
                     if (!var4.hasNext()) {
                         return false;
                     }
 
-                    guibuttonrecipetab = (GuiButtonRecipeTab)var4.next();
-                } while(!guibuttonrecipetab.mousePressed(this.mc, p_191862_1_, p_191862_2_));
+                    guibuttonrecipetab = (net.minecraft.client.gui.recipebook.GuiButtonRecipeTab)var4.next();
+                } while(!guibuttonrecipetab.mousePressed(this.mc, x, y));
 
                 if (this.currentTab != guibuttonrecipetab) {
                     guibuttonrecipetab.playPressSound(this.mc.getSoundHandler());
@@ -344,13 +372,19 @@ public class GUIScrambleBook extends Gui implements IRecipeUpdateListener {
         }
     }
 
-    public boolean hasClickedOutside(int p_193955_1_, int p_193955_2_, int p_193955_3_, int p_193955_4_, int p_193955_5_, int p_193955_6_) {
+    public boolean hasClickedOutside(int x1, int y1, int width, int height, int a, int b) {
         if (!this.isVisible()) {
             return true;
         } else {
-            boolean flag = p_193955_1_ < p_193955_3_ || p_193955_2_ < p_193955_4_ || p_193955_1_ >= p_193955_3_ + p_193955_5_ || p_193955_2_ >= p_193955_4_ + p_193955_6_;
-            boolean flag1 = p_193955_3_ - 147 < p_193955_1_ && p_193955_1_ < p_193955_3_ && p_193955_4_ < p_193955_2_ && p_193955_2_ < p_193955_4_ + p_193955_6_;
-            return flag && !flag1 && !this.currentTab.mousePressed(this.mc, p_193955_1_, p_193955_2_);
+            boolean flag = x1 < width ||
+                    y1 < height ||
+                    x1 >= width + a ||
+                    y1 >= height + b;
+            boolean flag1 = width - 147 < x1 &&
+                    x1 < width &&
+                    height < y1 &&
+                    y1 < height + b;
+            return flag && !flag1 && !this.currentTab.mousePressed(this.mc, x1, y1);
         }
     }
 
@@ -415,20 +449,25 @@ public class GUIScrambleBook extends Gui implements IRecipeUpdateListener {
 
         while(var2.hasNext()) {
             IRecipe irecipe = (IRecipe)var2.next();
-            this.mc.player.removeRecipeHighlight(irecipe);
+            try {
+                this.mc.player.removeRecipeHighlight(irecipe);
+            }catch (Exception e)
+            {
+
+            }
         }
 
     }
 
-    public void setupGhostRecipe(IRecipe p_193951_1_, List<Slot> p_193951_2_) {
-        ItemStack itemstack = p_193951_1_.getRecipeOutput();
-        this.ghostRecipe.setRecipe(p_193951_1_);
-        this.ghostRecipe.addIngredient(Ingredient.fromStacks(new ItemStack[]{itemstack}), ((Slot)p_193951_2_.get(0)).xPos, ((Slot)p_193951_2_.get(0)).yPos);
+    public void setupGhostRecipe(IRecipe iRecipe, List<Slot> slots) {
+        ItemStack itemstack = iRecipe.getRecipeOutput();
+        this.ghostRecipe.setRecipe(iRecipe);
+        this.ghostRecipe.addIngredient(Ingredient.fromStacks(new ItemStack[]{itemstack}), (slots.get(0)).xPos, (slots.get(0)).yPos);
         int i = this.craftingSlots.getWidth();
         int j = this.craftingSlots.getHeight();
-        int k = p_193951_1_ instanceof IShapedRecipe ? ((IShapedRecipe)p_193951_1_).getRecipeWidth() : i;
+        int k = iRecipe instanceof IShapedRecipe ? ((IShapedRecipe)iRecipe).getRecipeWidth() : i;
         int l = 1;
-        Iterator<Ingredient> iterator = p_193951_1_.getIngredients().iterator();
+        Iterator<Ingredient> iterator = iRecipe.getIngredients().iterator();
 
         for(int i1 = 0; i1 < j; ++i1) {
             for(int j1 = 0; j1 < k; ++j1) {
@@ -438,7 +477,7 @@ public class GUIScrambleBook extends Gui implements IRecipeUpdateListener {
 
                 Ingredient ingredient = (Ingredient)iterator.next();
                 if (ingredient.getMatchingStacks().length > 0) {
-                    Slot slot = (Slot)p_193951_2_.get(l);
+                    Slot slot = (Slot)slots.get(l);
                     this.ghostRecipe.addIngredient(ingredient, slot.xPos, slot.yPos);
                 }
 

@@ -11,6 +11,8 @@ import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.oredict.OreDictionary;
+import net.minecraftforge.oredict.OreIngredient;
 import net.minecraftforge.registries.ForgeRegistry;
 import org.apache.logging.log4j.Logger;
 
@@ -52,12 +54,15 @@ public class ModRecipes {
         }
 
         //logger.info("Removed recipe for crafting table");
-        Ingredient ruby =Ingredient.fromItem(ModItems.RUBY);
-        GameRegistry.addShapelessRecipe(ModBlocks.SCRAMBLE_BENCH.getRegistryName(), null, new ItemStack(ModBlocks.RUBY_BLOCK, 1),
-                ruby,ruby,ruby,ruby,ruby,ruby,ruby,ruby,ruby);
-        GameRegistry.addSmelting(ModBlocks.RUBY_BLOCK, new ItemStack(Blocks.DIAMOND_BLOCK, 2), 3.0f);
-        GameRegistry.addSmelting(new ItemStack(Blocks.OBSIDIAN), new ItemStack(ModItems.OBSIDIAN_INGOT), 0.4F);
-
+        //Ingredient ruby =Ingredient.fromItem(ModItems.RUBY);
+        //GameRegistry.addShapelessRecipe(ModBlocks.SCRAMBLE_BENCH.getRegistryName(), null, new ItemStack(ModBlocks.RUBY_BLOCK, 1),
+        //        ruby,ruby,ruby,ruby,ruby,ruby,ruby,ruby,ruby);
+        //GameRegistry.addSmelting(ModBlocks.RUBY_BLOCK, new ItemStack(Blocks.DIAMOND_BLOCK, 2), 3.0f);
+        //GameRegistry.addSmelting(new ItemStack(Blocks.OBSIDIAN), new ItemStack(ModItems.OBSIDIAN_INGOT), 0.4F);
+        GameRegistry.addShapedRecipe(Blocks.CRAFTING_TABLE.getRegistryName(),null,new ItemStack(ModBlocks.SCRAMBLE_BENCH),
+                "WW",
+                "WW",
+                'W', Blocks.PLANKS);
         //ScrambleFurnaceRecipes.instance().addRecipe(ModBlocks.RUBY_ORE, new ItemStack(ModItems.RUBY), 0.3f);
 
     }

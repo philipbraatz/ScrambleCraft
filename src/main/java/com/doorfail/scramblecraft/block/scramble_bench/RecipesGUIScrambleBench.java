@@ -77,7 +77,7 @@ protected static final ResourceLocation RECIPE_BOOK = new ResourceLocation(MODID
                 if (this.selected != null && this.selected.equals(entry.getKey())) {
                     this.selected = null; continue;
                 }
-                this.selected = (Rectangle)entry.getKey();
+                this.selected = entry.getKey();
             }
         }
         return super.mousePressed(mc, mouseX, mouseY);

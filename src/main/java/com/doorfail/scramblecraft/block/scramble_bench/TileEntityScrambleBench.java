@@ -16,22 +16,26 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.math.AxisAlignedBB;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TileEntityScrambleBench extends TileEntityLockableLoot implements ITickable, ISidedInventory
 {
-    private NonNullList<ItemStack> scrambleBenchItemStacks = NonNullList.<ItemStack>withSize(10, ItemStack.EMPTY);
+    private NonNullList<ItemStack> scrambleBenchMatrix = NonNullList.<ItemStack>withSize(9, ItemStack.EMPTY);
+    private ItemStack scrambleBenchResult = ItemStack.EMPTY;
     private String customName;
     public int numPlayersUsing=0;
 
     @Override
     public int getSizeInventory()
     {
-        return scrambleBenchItemStacks.size()-1;
+        return scrambleBenchMatrix.size()+1;
     }
 
     @Override
     public boolean isEmpty()
     {
-        for(ItemStack stack : this.scrambleBenchItemStacks)
+        for(ItemStack stack : this.scrambleBenchMatrix)
             if (!stack.isEmpty())
                 return false;
         return true;
@@ -40,33 +44,58 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
     @Override
     public ItemStack getStackInSlot(int index)
     {
-        if(index > scrambleBenchItemStacks.size()) {
+        //throw new Exception("Index is greater than size");
+        if(index == scrambleBenchMatrix.size()+1)
+            return scrambleBenchResult;
+        else if(index >=scrambleBenchMatrix.size())
             return ItemStack.EMPTY;
-            //throw new Exception("Index is greater than size");
-        }
-        return this.scrambleBenchItemStacks.get(index);
+        return this.scrambleBenchMatrix.get(index);
     }
 
     @Override
     public ItemStack decrStackSize(int index, int count)
     {
-        ItemStack ret =ItemStackHelper.getAndSplit(scrambleBenchItemStacks, index, count);
 
-        return ret;
+
+        if(index == scrambleBenchMatrix.size()+1)
+        {
+            List<ItemStack> single = new ArrayList<>();
+            single.add(scrambleBenchResult);
+            return ItemStackHelper.getAndSplit(single, index, count);
+        }
+        else
+            return ItemStackHelper.getAndSplit(scrambleBenchMatrix, index, count);
     }
 
     @Override
     public ItemStack removeStackFromSlot(int index)
     {
-        return ItemStackHelper.getAndRemove(scrambleBenchItemStacks, index);
+        if(index == scrambleBenchMatrix.size()+1)
+        {
+            List<ItemStack> single = new ArrayList<>();
+            single.add(scrambleBenchResult);
+            return ItemStackHelper.getAndRemove(single, index);
+        }
+        else
+            return ItemStackHelper.getAndRemove(scrambleBenchMatrix, index);
     }
 
     @Override
     public void setInventorySlotContents(int index, ItemStack stack)
     {
-        ItemStack itemStack = this.scrambleBenchItemStacks.get(index);
-        boolean flag = !stack.isEmpty() && stack.isItemEqual(itemStack) && ItemStack.areItemStackShareTagsEqual(stack, itemStack);
-        this.scrambleBenchItemStacks.set(index, stack);
+        ItemStack itemStack;
+        boolean flag;
+        if(index ==scrambleBenchMatrix.size()+1) {
+            itemStack = scrambleBenchResult;
+            flag = !stack.isEmpty() && stack.isItemEqual(itemStack) && ItemStack.areItemStackShareTagsEqual(stack, itemStack);
+            scrambleBenchResult = stack;
+        }
+        else
+        {
+            itemStack = this.scrambleBenchMatrix.get(index);
+            flag = !stack.isEmpty() && stack.isItemEqual(itemStack) && ItemStack.areItemStackShareTagsEqual(stack, itemStack);
+            this.scrambleBenchMatrix.set(index, stack);
+        }
         if(stack.getCount() > this.getInventoryStackLimit())
         {
             stack.setCount(this.getInventoryStackLimit());
@@ -74,11 +103,6 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
 
         if(index == 0 && !flag)
             this.markDirty();
-    }
-    @Override
-    public void updateContainingBlockInfo()
-    {
-        super.updateContainingBlockInfo();
     }
 
     /**
@@ -111,10 +135,16 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
     }
 
     @Override
+    public void updateContainingBlockInfo()
+    {
+        super.updateContainingBlockInfo();
+    }
+
+    @Override
     public void update()
     {
 
-        if (false)//!this.world.isRemote && this.numPlayersUsing > 0 )
+        if (!this.world.isRemote && this.numPlayersUsing > 0 )
         {
             this.numPlayersUsing = 0;
             float f = 5.0F;
@@ -134,7 +164,7 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
 
                 for (EntityPlayer entityplayer : this.world.getEntitiesWithinAABB(EntityPlayer.class, new AxisAlignedBB((double) ((float) pos.getX() - 5.0F), (double) ((float) pos.getY() - 5.0F), (double) ((float) pos.getZ() - 5.0F), (double) ((float) (pos.getX() + 1) + 5.0F), (double) ((float) (pos.getY() + 1) + 5.0F), (double) ((float) (pos.getZ() + 1) + 5.0F))))
                     if (entityplayer.openContainer instanceof ContainerScrambleBench)
-                        if (( entityplayer.openContainer).getInventory() == this.scrambleBenchItemStacks)
+                        if (( entityplayer.openContainer).getInventory() == this.scrambleBenchMatrix)
                             ++this.numPlayersUsing;
             }
         }
@@ -144,20 +174,15 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
     public boolean isUsableByPlayer(EntityPlayer player)
     {
         if(this.world.getTileEntity(this.pos) != this)
-        {
             return false;
-        }
         else
-        {
-            return player.getDistanceSq((double)this.pos.getX() + 0.5D, (double)this.pos.getY() + 0.5D, (double)this.pos.getZ() + 0.5D) <= 64.0D;
-        }
+            return player.getDistanceSq((double) this.pos.getX() + 0.5D, (double) this.pos.getY() + 0.5D, (double) this.pos.getZ() + 0.5D) <= 64.0D;
     }
 
     public void openInventory(EntityPlayer player)
     {
         ++this.numPlayersUsing;
         this.world.addBlockEvent(pos, this.getBlockType(), 1, this.numPlayersUsing);
-        this.world.notifyNeighborsOfStateChange(pos, this.getBlockType(), false);
     }
 
     public void closeInventory(EntityPlayer player)
@@ -171,17 +196,10 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
     @Override
     public boolean isItemValidForSlot(int index, ItemStack stack)
     {
-        return true;
-    }
-
-    @Override
-    public int getField(int id) {
-        return 0;
-    }
-
-    @Override
-    public void setField(int id, int value) {
-
+        if(index ==scrambleBenchMatrix.size()+1)
+            return false;
+        else
+            return true;
     }
 
     @Override
@@ -197,19 +215,18 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
     @Override
     public boolean canInsertItem(int index, ItemStack itemStackIn, EnumFacing direction)
     {
+        if(index == scrambleBenchMatrix.size()+1)
+            return false;
         return this.isItemValidForSlot(index, itemStackIn);
     }
 
     @Override
     public boolean canExtractItem(int index, ItemStack stack, EnumFacing direction)
     {
-        if(direction == EnumFacing.DOWN && index == 1)
-        {
-            Item item = stack.getItem();
-            if(item != Items.WATER_BUCKET && item != Items.BUCKET)
-                return false;
-        }
-        return true;
+        if(direction == EnumFacing.DOWN && index ==scrambleBenchMatrix.size()+1)
+            return true;
+        else
+            return false;
     }
 
     @Override
@@ -221,12 +238,12 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
     @Override
     public void clear()
     {
-        this.scrambleBenchItemStacks.clear();
+        this.scrambleBenchMatrix.clear();
     }
 
     @Override
     protected NonNullList<ItemStack> getItems() {
-        return this.scrambleBenchItemStacks;
+        return this.scrambleBenchMatrix;
     }
 
     @Override
@@ -239,7 +256,7 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
     public void readFromNBT(NBTTagCompound compound)
     {
         super.readFromNBT(compound);
-        ItemStackHelper.loadAllItems(compound, this.scrambleBenchItemStacks);
+        ItemStackHelper.loadAllItems(compound, this.scrambleBenchMatrix);
 
         if (compound.hasKey("CustomName", 8))
             this.customName = compound.getString("CustomName");
@@ -247,7 +264,7 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
 
     public NBTTagCompound writeToNBT(NBTTagCompound compound)
     {
-        ItemStackHelper.saveAllItems(compound, this.scrambleBenchItemStacks);
+        ItemStackHelper.saveAllItems(compound, this.scrambleBenchMatrix);
 
         if (this.hasCustomName())
             compound.setString("CustomName", this.customName);

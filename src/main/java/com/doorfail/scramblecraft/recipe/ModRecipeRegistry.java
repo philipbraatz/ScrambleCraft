@@ -1,7 +1,6 @@
 package com.doorfail.scramblecraft.recipe;
 
 import com.doorfail.scramblecraft.init.ModBlocks;
-import com.doorfail.scramblecraft.init.ModItems;
 import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
@@ -214,7 +213,7 @@ public class ModRecipeRegistry {
         }
     }
 
-    public static List<ModRecipe> getRecipeList(UUID playerId,ResourceLocation craftingMachine)
+    public static List<ModRecipe> getModRecipeList(UUID playerId, ResourceLocation craftingMachine)
     {
         List<ModRecipe> recipes =new ArrayList<>();
         if(isPlayerInRegistry(playerId,true))
@@ -233,6 +232,33 @@ public class ModRecipeRegistry {
             return recipes;
     }
 
+    public static List<IRecipe> getIRecipeList(UUID playerId,ResourceLocation craftingMachine)
+    {
+        List<IRecipe> recipes =new ArrayList<>();
+        if(isPlayerInRegistry(playerId,true))
+            for (ModRecipe r : playerRecipeList.get(playerId))
+                recipes.add(r);
+
+        if(recipes.size() >0) {
+            List<IRecipe> filter = new ArrayList<>();
+            for (IRecipe recipe : recipes
+            ) {
+                if (craftingMachine == ((ModRecipe)recipe).craftingMachine)
+                    filter.add(recipe);
+            }
+            return filter;
+        }
+        else
+            return recipes;
+    }
+
+    public static List<IRecipe> getIRecipeList(List<ModRecipe> modRecipes)
+    {
+        List<IRecipe> recipes= new ArrayList<>();
+        for (ModRecipe r:modRecipes) recipes.add(r);
+        return recipes;
+    }
+
     public static int getMatchIndex(UUID playerId,ResourceLocation craftingMachine,List<Ingredient> ingredients)
     {
         if(!isPlayerMachineInRegistry(playerId,craftingMachine))
@@ -240,8 +266,11 @@ public class ModRecipeRegistry {
 
         List<ResourceLocation> ingItems = new ArrayList<>();
 
-        for (Ingredient itemStack : ingredients)
-            ingItems.add(itemStack.getMatchingStacks()[0].getItem().getRegistryName());//TODO loop through all getMatchingStacks
+        for (Ingredient itemStack : ingredients) {
+            ItemStack[] matching = itemStack.getMatchingStacks();
+            if (matching.length > 0)
+                ingItems.add(matching[0].getItem().getRegistryName());//TODO loop through all matching
+        }
 
         //playerRecipeList.values();
 
@@ -273,7 +302,13 @@ public class ModRecipeRegistry {
     }
 
 
-
+    public static ModRecipe getMatchingModRecipe(UUID player, ResourceLocation craftingBock, IRecipe recipe)
+    {
+        for (ModRecipe modRecipe:playerRecipeList.get(player))
+            if (modRecipe.matches(recipe, craftingBock))
+                return modRecipe;
+        return ModRecipe.EMPTY(craftingBock);
+    }
 
     public static NonNullList<Ingredient> getItemsAsIngredient(List<Item> ingredients)
     {
@@ -332,11 +367,11 @@ public class ModRecipeRegistry {
         }
 
         //logger.info("Removed recipe for crafting table");
-        Ingredient ruby =Ingredient.fromItem(ModItems.RUBY);
-        GameRegistry.addShapelessRecipe(ModBlocks.SCRAMBLE_BENCH.getRegistryName(), null, new ItemStack(ModBlocks.RUBY_BLOCK, 1),
-                ruby,ruby,ruby,ruby,ruby,ruby,ruby,ruby,ruby);
-        GameRegistry.addSmelting(ModBlocks.RUBY_BLOCK, new ItemStack(Blocks.DIAMOND_BLOCK, 2), 3.0f);
-        GameRegistry.addSmelting(new ItemStack(Blocks.OBSIDIAN), new ItemStack(ModItems.OBSIDIAN_INGOT), 0.4F);
+        //Ingredient ruby =Ingredient.fromItem(ModItems.RUBY);
+        //GameRegistry.addShapelessRecipe(ModBlocks.SCRAMBLE_BENCH.getRegistryName(), null, new ItemStack(ModBlocks.RUBY_BLOCK, 1),
+        //        ruby,ruby,ruby,ruby,ruby,ruby,ruby,ruby,ruby);
+       // GameRegistry.addSmelting(ModBlocks.RUBY_BLOCK, new ItemStack(Blocks.DIAMOND_BLOCK, 2), 3.0f);
+        //GameRegistry.addSmelting(new ItemStack(Blocks.OBSIDIAN), new ItemStack(ModItems.OBSIDIAN_INGOT), 0.4F);
 
         //ScrambleFurnaceRecipes.instance().addRecipe(ModBlocks.RUBY_ORE, new ItemStack(ModItems.RUBY), 0.3f);
 
@@ -360,7 +395,7 @@ public class ModRecipeRegistry {
         int overflow = 15;//number of times to try till failure
         int counter = 0;
 
-        List<ModRecipe> recipeList =getRecipeList(playerId,craftingBlock);
+        List<ModRecipe> recipeList = getModRecipeList(playerId,craftingBlock);
 
         //loop until unique or till failure
         do {
@@ -402,10 +437,10 @@ public class ModRecipeRegistry {
     public static void randomizeRecipe(IInventory craftGrid, EntityPlayer entityPlayer, ResourceLocation craftingBlock, List<Ingredient> ingredient,Container container)
     {
         //dont scramble the first 2 recipes created
-        if(getRecipeList(entityPlayer.getUniqueID(),craftingBlock).size() >2)
+        if(getModRecipeList(entityPlayer.getUniqueID(),craftingBlock).size() >2)
         {
             oldIndex= ModRecipeRegistry.getMatchIndex(entityPlayer.getUniqueID(),craftingBlock,ingredient);
-            List<ModRecipe> recipes = ModRecipeRegistry.getRecipeList(entityPlayer.getUniqueID(),craftingBlock);
+            List<ModRecipe> recipes = ModRecipeRegistry.getModRecipeList(entityPlayer.getUniqueID(),craftingBlock);
             if(
                     oldIndex != -1 &&
                             recipes.get(oldIndex).IsReady()
@@ -440,7 +475,7 @@ public class ModRecipeRegistry {
 
     public static boolean recipeExists(UUID playerId, ResourceLocation craftingBlock,List<Ingredient> ingredients)
     {
-        List<ModRecipe> recipeList = ModRecipeRegistry.getRecipeList(playerId,craftingBlock);
+        List<ModRecipe> recipeList = ModRecipeRegistry.getModRecipeList(playerId,craftingBlock);
         for (ModRecipe check:recipeList) {
             List<Ingredient> checkStack = check.getInputIngredients();
             if (ingredients.size() == checkStack.size()) {

@@ -1,11 +1,11 @@
-package com.doorfail.scramblecraft.recipe.recipe_book;
+package com.doorfail.scramblecraft.recipe.recipe_book.gui;
 
+import com.doorfail.scramblecraft.recipe.ModRecipe;
+import com.doorfail.scramblecraft.recipe.recipe_book.ScrambleBookPage;
+import com.doorfail.scramblecraft.recipe.recipe_book.ScrambleList;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.recipebook.GuiButtonRecipe;
-import net.minecraft.client.gui.recipebook.RecipeBookPage;
-import net.minecraft.client.gui.recipebook.RecipeList;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.client.resources.I18n;
@@ -26,8 +26,8 @@ import static com.doorfail.scramblecraft.util.Reference.MODID;
 @SideOnly(Side.CLIENT)
 public class GUIButtonScrambleRecipe extends GuiButton {
     private static final ResourceLocation RECIPE_BOOK = new ResourceLocation(MODID+":textures/gui/recipe_book.png");
-    private ScrambleBook book;
-    private ScrambleList list;
+    private RecipeBook book;
+    private ScrambleList scrambleList;
     private float time;
     private float animationTime;
     private int currentIndex;
@@ -41,18 +41,19 @@ public class GUIButtonScrambleRecipe extends GuiButton {
         this.enabled = button.enabled;
         this.visible =  button.visible;
         this.packedFGColour = button.packedFGColour;
-        this.list = button.getList();
+        this.scrambleList = button.getScrambleList();
     }
 
-    public void init(ScrambleList recipeList, ScrambleBookPage bookPage, ScrambleBook book) {
-        this.list = recipeList;
+    public void init(ScrambleList recipeList, ScrambleBookPage bookPage, RecipeBook book) {
+        this.scrambleList = recipeList;
         this.book = book;
-        List<IRecipe> list = recipeList.getRecipes(book.isFilteringCraftable());
+        List<ModRecipe> list = recipeList.getRecipes(book.isFilteringCraftable());
         Iterator iRecipeIterator = list.iterator();
 
         while(iRecipeIterator.hasNext()) {
             IRecipe irecipe = (IRecipe)iRecipeIterator.next();
-            if (book.isNew(irecipe)) {
+            if (true)//book.isNew(irecipe))//Error getting IDs for unique named color recipes
+            {
                 bookPage.recipesShown(list);
                 this.animationTime = 15.0F;
                 break;
@@ -61,8 +62,8 @@ public class GUIButtonScrambleRecipe extends GuiButton {
 
     }
 
-    public ScrambleList getList() {
-        return this.list;
+    public ScrambleList getScrambleList() {
+        return this.scrambleList;
     }
 
     public void setPosition(int x, int y) {
@@ -81,12 +82,14 @@ public class GUIButtonScrambleRecipe extends GuiButton {
             mc.getTextureManager().bindTexture(RECIPE_BOOK);
             GlStateManager.disableLighting();
             int i = 29;
-            if (!this.list.containsCraftableRecipes()) {
+            if (this.scrambleList != null &&
+                    !this.scrambleList.containsCraftableRecipes()) {
                 i += 25;
             }
 
             int j = 206;
-            if (this.list.getRecipes(this.book.isFilteringCraftable()).size() > 1) {
+            if (this.scrambleList != null &&
+                    this.scrambleList.getRecipes(this.book.isFilteringCraftable()).size() > 1) {
                 j += 25;
             }
 
@@ -100,13 +103,15 @@ public class GUIButtonScrambleRecipe extends GuiButton {
                 this.animationTime -= partialTicks;
             }
 
+            //draw subgroup
             this.drawTexturedModalRect(this.x, this.y, i, j, this.width, this.height);
             List<IRecipe> list = this.getOrderedRecipes();
             if(list.size() >0) {
                 this.currentIndex = MathHelper.floor(this.time / 30.0F) % list.size();
                 ItemStack itemstack = ( list.get(this.currentIndex)).getRecipeOutput();
                 int k = 4;
-                if (this.list.hasSingleResultItem() && this.getOrderedRecipes().size() > 1) {
+                if (this.scrambleList != null &&
+                        this.scrambleList.hasSingleResultItem() && this.getOrderedRecipes().size() > 1) {
                     mc.getRenderItem().renderItemAndEffectIntoGUI(itemstack, this.x + k + 1, this.y + k + 1);
                     --k;
                 }
@@ -127,13 +132,18 @@ public class GUIButtonScrambleRecipe extends GuiButton {
 
     }
 
+    //Display Methods of crafting
     private List<IRecipe> getOrderedRecipes() {
-        List<IRecipe> list = this.list.getDisplayRecipes(true);
-        if (!this.book.isFilteringCraftable()) {
-            list.addAll(this.list.getDisplayRecipes(false));
+        if(this.scrambleList != null) {
+            List<IRecipe> list = this.scrambleList.getDisplayRecipes(true);
+            if (!this.book.isFilteringCraftable()) {
+                list.addAll(this.scrambleList.getDisplayRecipes(false));
+            }
+            return list;
         }
+        else return new ArrayList<>();
 
-        return list;
+
     }
 
     public boolean isOnlyOption() {
@@ -154,7 +164,8 @@ public class GUIButtonScrambleRecipe extends GuiButton {
         {
             ItemStack itemstack = ((IRecipe) this.getOrderedRecipes().get(this.currentIndex)).getRecipeOutput();
             List<String> list = guiScreen.getItemToolTip(itemstack);
-            if (this.list.getRecipes(this.book.isFilteringCraftable()).size() > 1) {
+            if (this.scrambleList != null &&
+                    this.scrambleList.getRecipes(this.book.isFilteringCraftable()).size() > 1) {
                 list.add(I18n.format("gui.recipebook.moreRecipes", new Object[0]));
             }
 

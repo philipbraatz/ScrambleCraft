@@ -1,8 +1,0 @@
-
-{
-  "parent": "item/handheld",
-  "textures": {
-    "layer0": "scramblecraft:items/ruby_axe",
-    "inventory": "scramblecraft:items/ruby"
-  }
-}

@@ -85,8 +85,12 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
         craftingMachine =craftingBlock;
         this.width =width;
         this.height =height;
-        if(outputs.size()>0)
-            this.setRegistryName(outputs.get(0).getItem().getRegistryName());
+        if(outputs.size()>0) {
+            if(outputs.get(0).getMetadata() >0) {
+                System.out.println(outputs.get(0).getItem().getRegistryName().toString()+" metadata = "+outputs.get(0).getMetadata());
+            }
+                this.setRegistryName(outputs.get(0).getItem().getRegistryName());
+        }
 
         try {
             boolean isEmpty = true;
@@ -261,6 +265,13 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
                 recipe.inputIngredients.equals(this.inputIngredients) &&
                 recipe.craftingMachine.equals(this.craftingMachine);
     }
+    public boolean matches(IRecipe recipe,ResourceLocation craftingMachine) {
+        List<ItemStack> outputs = new ArrayList<>();
+        outputs.add(recipe.getRecipeOutput());
+        return this.outputItemStacks.equals(outputs) &&
+                this.inputIngredients.equals(recipe.getIngredients()) &&
+                this.craftingMachine.equals(craftingMachine);
+    }
 
     @Override
     public boolean matches(InventoryCrafting inv, World worldIn) {
@@ -310,10 +321,11 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
         return true;
     }
 
+    //used for parent check
     @Override
     public ItemStack getCraftingResult(InventoryCrafting inventoryCrafting) {
-        if(matches(inventoryCrafting, Minecraft.getMinecraft().world))
-            return craftItem(Minecraft.getMinecraft().player,inventoryCrafting,null).get(0);
+        if(this.matches(inventoryCrafting, Minecraft.getMinecraft().world))
+            return this.checkResult().get(0);
         else
             return ItemStack.EMPTY;
     }
