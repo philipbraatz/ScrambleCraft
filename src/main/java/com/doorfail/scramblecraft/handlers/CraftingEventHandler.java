@@ -12,6 +12,7 @@ public class CraftingEventHandler {
 
     boolean testDebug =false;
     boolean firstCall =true;//fix double call
+    public static boolean hasCrafted;
 
     @SubscribeEvent
     public void itemCrafted(PlayerEvent.ItemCraftedEvent event)
@@ -20,7 +21,7 @@ public class CraftingEventHandler {
             firstCall = false;
 
             if (event.craftMatrix.getSizeInventory() == 4) {
-
+                hasCrafted =true;
                 //event.setCanceled(true);
             } else {
                 //logger.info("Crafting - " + event.crafting);

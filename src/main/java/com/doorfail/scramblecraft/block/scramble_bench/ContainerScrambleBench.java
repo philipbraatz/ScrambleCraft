@@ -1,6 +1,7 @@
 package com.doorfail.scramblecraft.block.scramble_bench;
 
 
+import com.doorfail.scramblecraft.handlers.CraftingEventHandler;
 import com.doorfail.scramblecraft.init.ModBlocks;
 import com.doorfail.scramblecraft.recipe.ModCraftingManager;
 import com.doorfail.scramblecraft.recipe.ModRecipe;
@@ -8,6 +9,8 @@ import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.SPacketSetSlot;
@@ -30,6 +33,10 @@ public class ContainerScrambleBench extends Container
     /** The crafting matrix inventory (3x3). */
     public InventoryCrafting craftMatrix = new InventoryCrafting(this, 3, 3);
     public InventoryCraftResult craftResult = new InventoryCraftResult();
+    //slot numbers
+    //0: result
+    //1-9:matrix
+
     private final World world;
     /** Position of the workbench */
     private final BlockPos pos;
@@ -156,16 +163,35 @@ public class ContainerScrambleBench extends Container
                         //TODO dupe is still a problem
                         if (returnItem.getCount() < 1)
                             returnItem.setCount(1);
-                        else if (returnItem.getCount() >= ModRecipeRegistry.previousStackSize * 2)//Temporary fix for output craft doubling
-                            returnItem.setCount(ModRecipeRegistry.previousStackSize);//will still dupe if output is less than double
-                        ModRecipeRegistry.previousStackSize = returnItem.getCount();
+                        //else if (returnItem.getCount() >= ModRecipeRegistry.previousStackSize * 2)//Temporary fix for output craft doubling
+                        //    returnItem.setCount(ModRecipeRegistry.previousStackSize);//will still dupe if output is less than double
+                        //ModRecipeRegistry.previousStackSize = returnItem.getCount();
                         craftedLast =true;
 
-                        //server side
-                        IncraftResult.setInventorySlotContents(0, returnItem);
-                        //visual inside crafting table
-                        entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, 0, returnItem));
+                        //Temp fix for major dupe bug
+                        if(true)//CraftingEventHandler.hasCrafted)
+                            {
+                            InventoryCrafting halfGrid = craftingGrid;
+                            //returnItem.setCount(returnItem.getCount()/2);//half output slot;
+                            for (int i = 1; i < craftingGrid.getSizeInventory() + 1; i++) {
+                                ItemStack slot = craftingGrid.getStackInSlot(i);
+                                if (slot.getCount() > 64)
+                                {
+                                    slot.setCount(64);
+                                    logger.warn("Overflow Itemstack");
+                                }
+                                //if(slot.getCount()>0)
+                                    //slot.setCount(slot.getCount()-1);
+                                entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, i, slot));//half each slot
+                            }
 
+                            //server side
+                            IncraftResult.setInventorySlotContents(0, returnItem);
+                            //visual inside crafting table
+                            entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, 0, returnItem));//output
+
+                            CraftingEventHandler.hasCrafted =false;
+                        }
                     }
 
                 }catch (Exception e)
@@ -181,19 +207,10 @@ public class ContainerScrambleBench extends Container
 
                 IncraftResult.setInventorySlotContents(0, ItemStack.EMPTY);
                 //visual inside crafting table
-                entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, 0,  ItemStack.EMPTY));
+                entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, 0,ItemStack.EMPTY));
 
 
             }
-
-            //Xupdate TileEntityX Only dupes Items after craft
-            //try {
-            //    TileEntityScrambleBench tileEntity = getTileEntity(world);
-            //    for (int i = 0; i < craftingGrid.getSizeInventory(); i++) {
-            //        tileEntity.setInventorySlotContents(i, craftingGrid.getStackInSlot(i));
-            //        tileEntity.setInventorySlotContents(10, craftResult.getStackInSlot(0));
-            //    }
-            //}catch (Exception e){}
         }
     }
 
