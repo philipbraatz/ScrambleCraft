@@ -9,7 +9,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GUIScrambleFurnace extends GuiContainer
 {
-    private static final ResourceLocation SCRAMBLE_FURNACE_TEXTURE = new ResourceLocation(Reference.MODID + ":textures/recipe_book/scramble_furnace.png");
+    private static final ResourceLocation SCRAMBLE_FURNACE_TEXTURE = new ResourceLocation(Reference.MODID + ":textures/gui/scramble_furnace.png");
     private final InventoryPlayer playerInventory;
     private final IInventory tileFurnace;
 

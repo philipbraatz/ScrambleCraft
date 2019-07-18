@@ -14,21 +14,25 @@ import java.util.Map;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.stats.RecipeBook;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.apache.logging.log4j.Logger;
 
 @SideOnly(Side.CLIENT)
 public class ScrambleBookClient extends RecipeBook {
-    public static final Map<CreativeTabs, List<ScrambleList>> RECIPES_BY_TAB = Maps.newHashMap();
-    public static final List<ScrambleList> ALL_RECIPES = Lists.newArrayList();
+    public static final Map<CreativeTabs, List<ScrambleSubRecipes>> RECIPES_BY_TAB = Maps.newHashMap();
+    public static final List<ScrambleSubRecipes> ALL_RECIPES = Lists.newArrayList();
+    public static Logger logger;
 
     public ScrambleBookClient() {
     }
 
-    private static ScrambleList newRecipeList(CreativeTabs srcTab) {
-        ScrambleList recipelist = new ScrambleList();
+    //New Recipe
+    private static ScrambleSubRecipes newRecipeList(CreativeTabs srcTab) {
+        ScrambleSubRecipes recipelist = new ScrambleSubRecipes();
         ALL_RECIPES.add(recipelist);
         (RECIPES_BY_TAB.computeIfAbsent(srcTab, (tabs) -> {
             return new ArrayList();
@@ -56,26 +60,29 @@ public class ScrambleBookClient extends RecipeBook {
     public static void rebuildTable() {
         RECIPES_BY_TAB.clear();
         ALL_RECIPES.clear();
-        Table<CreativeTabs, String, ScrambleList> table = HashBasedTable.create();
+        Table<CreativeTabs, String, ScrambleSubRecipes> table = HashBasedTable.create();
         Iterator var1 =ModRecipeRegistry.getModRecipeList(Minecraft.getMinecraft().player.getUniqueID(), ModBlocks.SCRAMBLE_BENCH.getRegistryName()).iterator();
 
         while(var1.hasNext()) {
             ModRecipe irecipe = (ModRecipe)var1.next();
             if (!irecipe.isDynamic()) {
-                CreativeTabs creativetabs = getItemStackTab(irecipe.getRecipeOutput());
+                CreativeTabs recipeTab = getItemStackTab(irecipe.getRecipeOutput());
                 String s = irecipe.getGroup();
-                ScrambleList recipelist1;
+                ScrambleSubRecipes recipelist1;
                 if (s.isEmpty())
-                    recipelist1 = newRecipeList(creativetabs);
+                    recipelist1 = newRecipeList(recipeTab);
                 else {
-                    recipelist1 = table.get(creativetabs, s);
+                    recipelist1 = table.get(recipeTab, s);
                     if (recipelist1 == null) {
-                        recipelist1 = newRecipeList(creativetabs);
-                        table.put(creativetabs, s, recipelist1);
+                        recipelist1 = newRecipeList(recipeTab);
+                        table.put(recipeTab, s, recipelist1);
                     }
                 }
 
-                recipelist1.add(irecipe);
+                if(irecipe.checkResult().size() !=0)
+                    recipelist1.add(irecipe);
+                else
+                    logger.info(irecipe.getRegistryName()+" Has an empty Output");
             }
         }
 

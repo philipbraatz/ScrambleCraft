@@ -28,14 +28,14 @@ public class ScrambleBookPage {
     private GUIScrambleRecipeMiniWindow overlay = new GUIScrambleRecipeMiniWindow();
     private Minecraft minecraft;
     private List<IRecipeUpdateListener> listeners = Lists.newArrayList();
-    private List<ScrambleList> recipeLists;
+    private List<ScrambleSubRecipes> recipeLists;
     private GuiButtonToggle forwardButton;
     private GuiButtonToggle backButton;
     private int totalPages;
     private int currentPage;
     private RecipeBook scrambleBook;
     private ModRecipe lastClickedRecipe;
-    private ScrambleList lastClickedRecipeList;
+    private ScrambleSubRecipes lastClickedRecipeList;
     private ServerScrambleBookHelper serverHelper;
 
     public ScrambleBookPage() {
@@ -64,7 +64,7 @@ public class ScrambleBookPage {
     }
 
     //Tab Change
-    public void updateLists(List<ScrambleList> recipeLists, boolean goToFirstPage) {
+    public void updateLists(List<ScrambleSubRecipes> recipeLists, boolean goToFirstPage) {
         this.recipeLists = recipeLists;
         this.totalPages = (int)Math.ceil((double)recipeLists.size() / 20.0D);
         if (this.totalPages <= this.currentPage || goToFirstPage) {
@@ -82,7 +82,7 @@ public class ScrambleBookPage {
             GUIButtonScrambleRecipe guibuttonrecipe = this.buttons.get(j);
             if (this.recipeLists != null &&
                     i + j < this.recipeLists.size()) {
-                ScrambleList recipelist = this.recipeLists.get(i + j);
+                ScrambleSubRecipes recipelist = this.recipeLists.get(i + j);
                 guibuttonrecipe.init(recipelist, this, this.scrambleBook);
                 guibuttonrecipe.visible = true;
             } else {
@@ -135,7 +135,7 @@ public class ScrambleBookPage {
     }
 
     @Nullable
-    public ScrambleList getLastClickedRecipeList() {
+    public ScrambleSubRecipes getLastClickedRecipeList() {
         return this.lastClickedRecipeList;
     }
 
@@ -189,9 +189,9 @@ public class ScrambleBookPage {
                 this.lastClickedRecipe = ModRecipeRegistry.getMatchingModRecipe(
                         Minecraft.getMinecraft().player.getUniqueID(),
                         ModBlocks.SCRAMBLE_BENCH.getRegistryName(),guibuttonrecipe.getRecipe());
-                this.lastClickedRecipeList = guibuttonrecipe.getScrambleList();
+                this.lastClickedRecipeList = guibuttonrecipe.getScrambleSubRecipes();
             } else if (!this.overlay.isVisible() && !guibuttonrecipe.isOnlyOption()) {
-                this.overlay.init(this.minecraft, guibuttonrecipe.getScrambleList(),
+                this.overlay.init(this.minecraft, guibuttonrecipe.getScrambleSubRecipes(),
                         guibuttonrecipe.x, guibuttonrecipe.y,
                         f1In + f1Half / 2, f5In + 13 + f5Half / 2,
                         (float)guibuttonrecipe.getButtonWidth(),this.scrambleBook);

@@ -97,12 +97,15 @@ public class BlockScrambleBench extends BlockContainer
         UUID player =Minecraft.getMinecraft().player.getUniqueID();
         if(!playersLoaded.contains(player)) {//only needs to be done once per server session
             Iterator craftingRecipeIter = CraftingManager.REGISTRY.iterator();
+            logger.info("Replacing all recipes");
+            logger.info("Expect log spam from FML!");
 
             IShapedRecipe entryShaped;
             IRecipe entry;
+            Object temp=null;
             do {
                 try {
-                    Object temp = craftingRecipeIter.next();
+                    temp = craftingRecipeIter.next();
                     try {
                         entryShaped = (IShapedRecipe) temp;
 
@@ -123,7 +126,7 @@ public class BlockScrambleBench extends BlockContainer
 
 
                 } catch (Exception e) {
-                    logger.error(e.getMessage());
+                    logger.info("Skipping Recipe: "+((IRecipe)temp).getRegistryName());//ect. armor/shield/banner recipes
                 }
 
 

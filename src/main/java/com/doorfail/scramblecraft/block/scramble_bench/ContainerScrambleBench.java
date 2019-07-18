@@ -160,17 +160,13 @@ public class ContainerScrambleBench extends Container
                         //ModRecipeRegistry.checkResult(ModRecipes.getIngredientAsItemStacks(shapedRecipe.getIngredients()),entityPlayer.getUniqueID(),ModBlocks.SCRAMBLE_BENCH.getRegistryName());
                         ItemStack returnItem = gridRecipe.craftItem(player,craftingGrid,this).get(0);
 
-                        //TODO dupe is still a problem
+
                         if (returnItem.getCount() < 1)
                             returnItem.setCount(1);
-                        //else if (returnItem.getCount() >= ModRecipeRegistry.previousStackSize * 2)//Temporary fix for output craft doubling
-                        //    returnItem.setCount(ModRecipeRegistry.previousStackSize);//will still dupe if output is less than double
-                        //ModRecipeRegistry.previousStackSize = returnItem.getCount();
-                        craftedLast =true;
-
-                        //Temp fix for major dupe bug
-                        if(true)//CraftingEventHandler.hasCrafted)
-                            {
+                        //TODO dupe is still a problem
+                        else if (craftedLast)//returnItem.getCount() >= ModRecipeRegistry.previousStackSize * 2)//Temporary fix for output craft doubling
+                        {
+                            craftedLast =false;
                             InventoryCrafting halfGrid = craftingGrid;
                             //returnItem.setCount(returnItem.getCount()/2);//half output slot;
                             for (int i = 1; i < craftingGrid.getSizeInventory() + 1; i++) {
@@ -180,10 +176,20 @@ public class ContainerScrambleBench extends Container
                                     slot.setCount(64);
                                     logger.warn("Overflow Itemstack");
                                 }
-                                //if(slot.getCount()>0)
-                                    //slot.setCount(slot.getCount()-1);
+                                if(slot.getCount()>0)
+                                    slot.setCount(slot.getCount()-1);
                                 entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, i, slot));//half each slot
                             }
+
+                            returnItem.setCount(ModRecipeRegistry.previousStackSize);//stops dupe after the fact
+                        }
+                        ModRecipeRegistry.previousStackSize = returnItem.getCount();
+                        craftedLast =true;
+
+                        //Temp fix for major dupe bug
+                        if(true)//CraftingEventHandler.hasCrafted)
+                            {
+
 
                             //server side
                             IncraftResult.setInventorySlotContents(0, returnItem);
@@ -196,7 +202,7 @@ public class ContainerScrambleBench extends Container
 
                 }catch (Exception e)
                 {
-                    logger.info(e.getCause());
+                    logger.info(e);
                 }
             }
             else

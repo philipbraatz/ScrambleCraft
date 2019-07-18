@@ -1,6 +1,5 @@
 package com.doorfail.scramblecraft.recipe;
 
-import com.doorfail.scramblecraft.init.ModBlocks;
 import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
@@ -16,7 +15,6 @@ import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
-import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.ForgeRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -113,7 +111,7 @@ public class ModRecipeRegistry {
         List<ItemStack> results = new ArrayList<>();
         ingredients.add(input);
         results.add(output);
-        addRecipe( playerId, craftingMachine, ingredients, results, width , height);
+        addRecipe( playerId, craftingMachine, ingredients, results, width , height, false);
     }
 
     //IN List
@@ -121,32 +119,32 @@ public class ModRecipeRegistry {
     {
         List<ItemStack> results = new ArrayList<>();
         results.add(output);
-        addRecipe( playerId, craftingMachine, input, results, width ,height );
+        addRecipe( playerId, craftingMachine, input, results, width ,height, false);
     }
     //OUT List
     public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, Ingredient input, List<ItemStack> output, int width, int height)
     {
         List<Ingredient> ingredients = new ArrayList<>();
         ingredients.add(input);
-        addRecipe( playerId, craftingMachine, ingredients, output, width,height );
+        addRecipe( playerId, craftingMachine, ingredients, output, width,height, false);
     }
     //IN NonNullList
     public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, NonNullList<Ingredient> input, ItemStack output, int width, int height)
     {
         List<ItemStack> results = new ArrayList<>();
         results.add(output);
-        addRecipe( playerId, craftingMachine, input, results, width ,height );
+        addRecipe( playerId, craftingMachine, input, results, width ,height, false);
     }
     //OUT NonNullList
     public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, Ingredient input, NonNullList<ItemStack> output, int width, int height)
     {
         List<Ingredient> ingredients = new ArrayList<>();
         ingredients.add(input);
-        addRecipe( playerId, craftingMachine, ingredients, output, width,height );
+        addRecipe( playerId, craftingMachine, ingredients, output, width,height, false);
     }
 
     //Lists
-    public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, List<Ingredient> input, List<ItemStack> output, int width, int height)
+    public static void addRecipe(UUID playerId, ResourceLocation craftingMachine, List<Ingredient> input, List<ItemStack> output, int width, int height, boolean warn)
     {
         for (ItemStack it:output)
         {
@@ -162,7 +160,7 @@ public class ModRecipeRegistry {
         }
 
         List<ModRecipe> recipes = new ArrayList<>();
-        if(isPlayerInRegistry(playerId,true)) {
+        if(isPlayerInRegistry(playerId,warn)) {
             recipes = playerRecipeList.get(playerId);//old
         }
         recipes.add(new ModRecipe(craftingMachine, input, output,width,height, true));//+new
@@ -259,6 +257,14 @@ public class ModRecipeRegistry {
         return recipes;
     }
 
+    public static void updateModRecipe(UUID playerId,ResourceLocation craftingMachine,List<Ingredient> ingredients)
+    {
+        int index = getMatchIndex(playerId,craftingMachine,ingredients);
+        if(index != -1)
+        {
+            playerRecipeList.put(playerId,getModRecipeList(playerId,craftingMachine));
+        }
+    }
     public static int getMatchIndex(UUID playerId,ResourceLocation craftingMachine,List<Ingredient> ingredients)
     {
         if(!isPlayerMachineInRegistry(playerId,craftingMachine))
@@ -269,7 +275,7 @@ public class ModRecipeRegistry {
         for (Ingredient itemStack : ingredients) {
             ItemStack[] matching = itemStack.getMatchingStacks();
             if (matching.length > 0)
-                ingItems.add(matching[0].getItem().getRegistryName());//TODO loop through all matching
+                ingItems.add(matching[0].getItem().getRegistryName());//loop not needed to check for match
         }
 
         //playerRecipeList.values();
@@ -279,9 +285,9 @@ public class ModRecipeRegistry {
         for (ModRecipe recipe : playerRecipeList.get(playerId))
         {
             List<ResourceLocation> sourceItems = new ArrayList<>();//recipe to compare
-            for (Ingredient it : recipe.getInputIngredients())
+            for (Ingredient it : recipe.getIngredients())
                 if(it.getMatchingStacks().length >0)
-                    sourceItems.add(it.getMatchingStacks()[0].getItem().getRegistryName());//TODO add all getMatchingStacks() to sourceItem
+                    sourceItems.add(it.getMatchingStacks()[0].getItem().getRegistryName());//loop not needed to check for match
 
 
             if (ingItems.size() == sourceItems.size()) //possible match
@@ -431,7 +437,7 @@ public class ModRecipeRegistry {
         }
         else
             return new ArrayList<>();//overflowed
-        return new ArrayList<>();//Why does java want this
+         return new ArrayList<>();//Why does java want this
     }
 
     public static void randomizeRecipe(IInventory craftGrid, EntityPlayer entityPlayer, ResourceLocation craftingBlock, List<Ingredient> ingredient,Container container)
@@ -456,8 +462,8 @@ public class ModRecipeRegistry {
                     recipes.get(oldIndex).setNewOutput(oldResultStack);//changed index -> current item
                     //logger.info("{} swapped with {}",oldIngredient.toString(), newIngredient.toString());
                 }
-                ModCraftingManager.updateRecipe(entityPlayer, craftingBlock, recipes.get(oldIndex), oldIndex);
-                ModCraftingManager.updateRecipe(entityPlayer, craftingBlock, recipes.get(newIndex), newIndex);
+                ModCraftingManager.updateRecipe(entityPlayer, craftingBlock, recipes.get(oldIndex),newIndex );
+                ModCraftingManager.updateRecipe(entityPlayer, craftingBlock, recipes.get(newIndex), oldIndex);
             }
         }
     }
@@ -477,7 +483,7 @@ public class ModRecipeRegistry {
     {
         List<ModRecipe> recipeList = ModRecipeRegistry.getModRecipeList(playerId,craftingBlock);
         for (ModRecipe check:recipeList) {
-            List<Ingredient> checkStack = check.getInputIngredients();
+            List<Ingredient> checkStack = check.getIngredients();
             if (ingredients.size() == checkStack.size()) {
                 boolean match = true;
                 for (int i = 0; i < checkStack.size(); i++) {

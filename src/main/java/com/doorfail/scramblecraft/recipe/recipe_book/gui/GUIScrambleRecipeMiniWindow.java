@@ -3,7 +3,7 @@ package com.doorfail.scramblecraft.recipe.recipe_book.gui;
 import com.doorfail.scramblecraft.init.ModBlocks;
 import com.doorfail.scramblecraft.recipe.ModRecipe;
 import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
-import com.doorfail.scramblecraft.recipe.recipe_book.ScrambleList;
+import com.doorfail.scramblecraft.recipe.recipe_book.ScrambleSubRecipes;
 import com.google.common.collect.Lists;
 
 import java.awt.*;
@@ -21,7 +21,6 @@ import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.stats.RecipeBook;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.common.crafting.IShapedRecipe;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -37,14 +36,14 @@ public class GUIScrambleRecipeMiniWindow extends Gui {
     private int x;
     private int y;
     private Minecraft mc;
-    private ScrambleList recipeList;
+    private ScrambleSubRecipes recipeList;
     private ModRecipe lastRecipeClicked;
     private float time;
 
     public GUIScrambleRecipeMiniWindow() {
     }
 
-    public void init(Minecraft mcIn, ScrambleList recipeListIn, int x, int y, int flIn, int f5In, float offset, RecipeBook book) {
+    public void init(Minecraft mcIn, ScrambleSubRecipes recipeListIn, int x, int y, int flIn, int f5In, float offset, RecipeBook book) {
         this.mc = mcIn;
         this.recipeList = recipeListIn;
         boolean flag = book.isFilteringCraftable();
@@ -95,7 +94,7 @@ public class GUIScrambleRecipeMiniWindow extends Gui {
         this.lastRecipeClicked = null;
     }
 
-    public ScrambleList getRecipeList() {
+    public ScrambleSubRecipes getRecipeList() {
         return this.recipeList;
     }
 

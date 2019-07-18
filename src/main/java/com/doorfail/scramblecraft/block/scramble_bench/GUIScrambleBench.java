@@ -23,7 +23,7 @@ import java.util.UUID;
 public class GUIScrambleBench extends GuiContainer implements IRecipeShownListener {
     private static Logger logger = LogManager.getLogger(Reference.MODID);
 
-    private static final ResourceLocation SCRAMBLE_BENCH_TEXTURE = new ResourceLocation(Reference.MODID + ":textures/recipe_book/scramble_bench.png");
+    private static final ResourceLocation SCRAMBLE_BENCH_TEXTURE = new ResourceLocation(Reference.MODID + ":textures/gui/scramble_bench.png");
     private final InventoryPlayer playerInv;
     private final TileEntityScrambleBench te;
     private final UUID playerId;
@@ -42,8 +42,9 @@ public class GUIScrambleBench extends GuiContainer implements IRecipeShownListen
 
         this.recipeBookGui = new GUIScrambleBook();
 
+        //size of
         this.xSize = 175;
-        this.ySize = 222;
+        this.ySize = 166;
     }
 
     @Override
@@ -52,7 +53,7 @@ public class GUIScrambleBench extends GuiContainer implements IRecipeShownListen
         this.widthTooNarrow = this.width < 379;
         this.recipeBookGui.init(this.width, this.height, this.mc, this.widthTooNarrow, ((ContainerScrambleBench)this.inventorySlots).craftMatrix);
         this.guiLeft = this.recipeBookGui.updateScreenPosition(this.widthTooNarrow, this.width, this.xSize);
-        this.recipeButton = new GuiButtonImage(10, this.guiLeft + 3, 60, 22, 22, 0, 168, 19, SCRAMBLE_BENCH_TEXTURE);
+        this.recipeButton = new GuiButtonImage(10, this.guiLeft + 5, this.height / 2 - 49, 20, 19, 0, 168, 19, SCRAMBLE_BENCH_TEXTURE);
         this.buttonList.add(this.recipeButton);
     }
 

@@ -4,7 +4,7 @@ import com.doorfail.scramblecraft.init.ModBlocks;
 import com.doorfail.scramblecraft.recipe.ModRecipe;
 import com.doorfail.scramblecraft.recipe.recipe_book.ScrambleBookClient;
 import com.doorfail.scramblecraft.recipe.recipe_book.ScrambleBookPage;
-import com.doorfail.scramblecraft.recipe.recipe_book.ScrambleList;
+import com.doorfail.scramblecraft.recipe.recipe_book.ScrambleSubRecipes;
 import com.doorfail.scramblecraft.util.Reference;
 import com.doorfail.scramblecraft.util.ServerScrambleBookHelper;
 import com.google.common.collect.Lists;
@@ -28,7 +28,6 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.InventoryCrafting;
 import net.minecraft.inventory.Slot;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
@@ -141,9 +140,9 @@ public class GUIScrambleBook extends Gui implements net.minecraft.client.gui.rec
         return this.recipeBook.isGuiOpen();
     }
 
-    private void setVisible(boolean p_193006_1_) {
-        this.recipeBook.setGuiOpen(p_193006_1_);
-        if (!p_193006_1_) {
+    private void setVisible(boolean visible) {
+        this.recipeBook.setGuiOpen(visible);
+        if (!visible) {
             this.scrambleBookPage.setInvisible();
         }
 
@@ -163,35 +162,37 @@ public class GUIScrambleBook extends Gui implements net.minecraft.client.gui.rec
     //UPDATER
     private void updateCollections(boolean firstPage, ResourceLocation craftingBlock) {
         //this.currentTab = recipeTabs.get(2);
-        if(ScrambleBookClient.RECIPES_BY_TAB.size() >0)
+        if(ScrambleBookClient.RECIPES_BY_TAB.containsKey(this.currentTab.getCategory()))
         {
 
-            List<ScrambleList> list = ScrambleBookClient.RECIPES_BY_TAB.get(this.currentTab.getCategory());
+            List<ScrambleSubRecipes> list = ScrambleBookClient.RECIPES_BY_TAB.get(this.currentTab.getCategory());
 
             //Dont know how this become empty
             if(list.size() ==0) {
                 ScrambleBookClient.rebuildTable();
                 list = ScrambleBookClient.RECIPES_BY_TAB.get(this.currentTab.getCategory());
             }
-            List<ScrambleList> list1 = Lists.newArrayList(list);
+            List<ScrambleSubRecipes> list1 = Lists.newArrayList(list);
 
+            boolean refreshed =false;
             Iterator iterList = list.iterator();
             while (iterList.hasNext())
             {
-                ScrambleList scrambleList =(ScrambleList) iterList.next();
-                for (ModRecipe r:scrambleList.getRecipes())
-                    if (r.checkResult().get(0).getItem() == Items.AIR) {
+                ScrambleSubRecipes scrambleSubRecipes =(ScrambleSubRecipes) iterList.next();
+                for (ModRecipe r: scrambleSubRecipes.getRecipes())
+                    if (!refreshed && r.checkResult().get(0).getItem() == Items.AIR) {
                         ScrambleBookClient.rebuildTable();//update recipe all outputs every time AIR is show as craftable
                         list1 = ScrambleBookClient.RECIPES_BY_TAB.get(this.currentTab.getCategory());//update local list
+                        refreshed =true;
                     }
 
-                scrambleList.canCraft(this.stackedContents, this.craftingSlots.getWidth(), this.craftingSlots.getHeight(), this.recipeBook);
+                scrambleSubRecipes.canCraft(this.stackedContents, this.craftingSlots.getWidth(), this.craftingSlots.getHeight(), this.recipeBook);
             }
 
             //Search Bar Sorting
             String s = this.searchBar.getText();
             if (!s.isEmpty()) {//TODO Reimplement search functionality
-                ObjectSet<ScrambleList> objectset = new ObjectLinkedOpenHashSet(this.mc.getSearchTree(SearchTreeManager.RECIPES).search(s.toLowerCase(Locale.ROOT)));
+                ObjectSet<ScrambleSubRecipes> objectset = new ObjectLinkedOpenHashSet(this.mc.getSearchTree(SearchTreeManager.RECIPES).search(s.toLowerCase(Locale.ROOT)));
                 list1.removeIf((recipe) -> {
                     return !objectset.contains(recipe);
                 });
@@ -318,7 +319,7 @@ public class GUIScrambleBook extends Gui implements net.minecraft.client.gui.rec
                     147, 166))
             {
                 IRecipe irecipe = this.scrambleBookPage.getLastClickedRecipe();
-                ScrambleList recipelist = this.scrambleBookPage.getLastClickedRecipeList();
+                ScrambleSubRecipes recipelist = this.scrambleBookPage.getLastClickedRecipeList();
                 if (irecipe != null && recipelist != null) {
                     if (!recipelist.isCraftable(irecipe) && this.ghostRecipe.getRecipe() == irecipe) {
                         return false;

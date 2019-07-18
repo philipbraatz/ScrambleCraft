@@ -27,6 +27,8 @@ import org.apache.logging.log4j.Logger;
 
 import static com.doorfail.scramblecraft.util.Reference.MODID;
 
+
+//moves items to and from the Scramble Table
 public class ServerScrambleBookHelper {
         private static Logger logger = LogManager.getLogger(MODID);
         private final RecipeItemHelper recipeHelper = new RecipeItemHelper();

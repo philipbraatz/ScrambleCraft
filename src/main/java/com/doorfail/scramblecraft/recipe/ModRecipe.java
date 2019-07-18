@@ -1,10 +1,13 @@
 package com.doorfail.scramblecraft.recipe;
 
+import com.doorfail.scramblecraft.init.ModBlocks;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryCrafting;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
 import net.minecraft.item.crafting.Ingredient;
@@ -18,12 +21,15 @@ import net.minecraft.world.World;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.common.crafting.IShapedRecipe;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.common.asm.transformers.ItemStackTransformer;
 import net.minecraftforge.registries.IForgeRegistryEntry;
 import org.apache.logging.log4j.Logger;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 //single custom made recipe
 public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements IShapedRecipe {
@@ -75,20 +81,21 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
         SetComponents(craftingBlock,inputs,outputs, width, height,false,true);
     }
 
-    public List<Ingredient> getInputIngredients()
-    {
-        return inputIngredients;
-    }
-
     private void SetComponents(ResourceLocation craftingBlock, List<Ingredient> inputs,List<ItemStack> outputs,int width, int height,boolean canScramble,boolean bypass)
     {
         craftingMachine =craftingBlock;
         this.width =width;
         this.height =height;
         if(outputs.size()>0) {
-            if(outputs.get(0).getMetadata() >0) {
-                System.out.println(outputs.get(0).getItem().getRegistryName().toString()+" metadata = "+outputs.get(0).getMetadata());
-            }
+            //DEBUG for colors
+            //if(outputs.get(0).getMetadata() >0) {
+            //    System.out.println(outputs.get(0).getItem().getRegistryName().toString()+" metadata = "+outputs.get(0).getMetadata());
+            //}
+            if(outputs.get(0).getItem() == Item.getItemFromBlock( ModBlocks.SCRAMBLE_BENCH))
+                this.setRegistryName(Blocks.CRAFTING_TABLE.getRegistryName());
+            else if(outputs.get(0).getItem() == Item.getItemFromBlock( ModBlocks.SCRAMBLE_FURNACE_OFF))
+                this.setRegistryName(Blocks.FURNACE.getRegistryName());
+            else
                 this.setRegistryName(outputs.get(0).getItem().getRegistryName());
         }
 
@@ -167,9 +174,31 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
     //only use when giving item to player
     public List<ItemStack> craftItem(EntityPlayer player, IInventory crafting, Container container)
     {
+        //update count
         count++;
+        ModCraftingManager.updateRecipe(player,craftingMachine,this,
+                ModRecipeRegistry.getMatchIndex(player.getUniqueID(),craftingMachine,this.inputIngredients));
+
         if(IsReady())
             ModRecipeRegistry.randomizeRecipe(crafting,player,craftingMachine,this.inputIngredients,container);
+        List<ItemStack> itList = new ArrayList<>();
+        boolean dirty =false;
+        for (ItemStack it:outputItemStacks) {
+            if(it.getCount()<=0) {
+                dirty =true;
+                it.setCount(1);//fix count
+            }
+            itList.add(it);
+        }
+        if(dirty)
+            outputItemStacks = itList;//no 0 count stacks
+
+        //InventoryCrafting invCrafting;
+        //if(craftingMachine == ModBlocks.SCRAMBLE_BENCH.getRegistryName())
+        //    invCrafting = new InventoryCrafting(container,3,3);//scramble bench
+        //else
+        //    invCrafting = new InventoryCrafting(container,1,1);//scramble furnace
+
         return outputItemStacks;
     }
 
@@ -273,14 +302,15 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
                 this.craftingMachine.equals(craftingMachine);
     }
 
+    //check recipe in every location
     @Override
     public boolean matches(InventoryCrafting inv, World worldIn) {
-        for(int i = 0; i <= inv.getWidth() - this.width; ++i) {
-            for(int j = 0; j <= inv.getHeight() - this.height; ++j) {
-                if (this.checkMatch(inv, i, j, true)) {
+        for(int startRow = 0; startRow <= inv.getWidth() - this.width; ++startRow) {
+            for(int startCik = 0; startCik <= inv.getHeight() - this.height; ++startCik) {
+                if (this.checkMatch(inv, startRow, startCik, true)) {//mirror verson
                     return true;
                 }
-                if (this.checkMatch(inv, i, j, false)) {
+                if (this.checkMatch(inv, startRow, startCik, false)) {//standard recipe
                     return true;
                 }
             }
@@ -288,33 +318,30 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
         return false;
     }
 
-    private boolean checkMatch(InventoryCrafting craftingInventory, int i, int j, boolean hasHeight) {
-
-
+    private boolean checkMatch(InventoryCrafting craftingInventory, int startRow, int startCol, boolean flipHorizontal) {
+        //look at each slot starting from startRow,StartCol
         for(int row = 0; row < craftingInventory.getWidth(); ++row) {
             for(int col = 0; col < craftingInventory.getHeight(); ++col) {
-                int rowi = row - i;
-                int colj = col - j;
+                int searchRow = row - startRow;
+                int searchCol = col - startCol;
                 Ingredient ingredient = Ingredient.EMPTY;
 
-                try {
-                    //If indexes are still within inventory
-                    if (rowi >= 0 && colj >= 0 &&
-                            rowi < this.width && colj < this.height) {
-                        if (hasHeight) {
-                            ingredient = this.inputIngredients.get(this.width - rowi - 1 + colj * this.height);
-                        } else {
-                            ingredient = this.inputIngredients.get(rowi + colj * this.width);
-                        }
-                    }
 
-                    if (!ingredient.apply(craftingInventory.getStackInRowAndColumn(row, col))) {
-                        return false;
+                //If indexes are still within inventory
+                if (searchRow >= 0 && searchCol >= 0 &&
+                        searchRow < this.width && searchCol < this.height) {
+                    if (flipHorizontal)
+                        ingredient = this.inputIngredients.get( //get current slot
+                                this.width - searchRow - 1 +        //mirror search row ==width - x
+                                        searchCol * this.width);           //width* current Col == y*height
+                    else
+                        ingredient = this.inputIngredients.get( //get current slot
+                                searchRow +                         // row = x
+                                        searchCol * this.width);           //width* current Col == y*height
                     }
-                }catch (IndexOutOfBoundsException e)
-                {
-                    //logger.warn("Out of bounds at row "+row+", col "+col);
-                }
+                //Compare current slot stack to recipe slots Ingredient
+                if (!ingredient.apply(craftingInventory.getStackInRowAndColumn(row, col)))
+                    return false;//doesn't match, end check
             }
         }
 

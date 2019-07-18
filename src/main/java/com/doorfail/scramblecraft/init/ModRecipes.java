@@ -5,6 +5,7 @@ import com.doorfail.scramblecraft.recipe.ModCraftingManager;
 import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
 import com.google.common.collect.Lists;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.IRecipe;
@@ -49,6 +50,21 @@ public class ModRecipes {
             if (output.getItem() == Item.getItemFromBlock(Blocks.CRAFTING_TABLE))
             {
                 recipeRegistry.remove(r.getRegistryName());
+                GameRegistry.addShapedRecipe(Blocks.CRAFTING_TABLE.getRegistryName(),null,new ItemStack(ModBlocks.SCRAMBLE_BENCH),
+                        "WW",
+                        "WW",
+                        'W', Blocks.PLANKS);
+                //recipeRegistry.register(DummyRecipe.from(r));
+            }
+            else if (output.getItem() == Item.getItemFromBlock(Blocks.FURNACE))
+            {
+                recipeRegistry.remove(r.getRegistryName());
+                GameRegistry.addShapedRecipe(Blocks.FURNACE.getRegistryName(),null,new ItemStack(ModBlocks.SCRAMBLE_FURNACE_OFF),
+                        "CCC",
+                        "CAC",
+                        "CCC",
+                        'C',Blocks.COBBLESTONE,
+                        'A', Items.AIR);
                 //recipeRegistry.register(DummyRecipe.from(r));
             }
         }
@@ -59,10 +75,6 @@ public class ModRecipes {
         //        ruby,ruby,ruby,ruby,ruby,ruby,ruby,ruby,ruby);
         //GameRegistry.addSmelting(ModBlocks.RUBY_BLOCK, new ItemStack(Blocks.DIAMOND_BLOCK, 2), 3.0f);
         //GameRegistry.addSmelting(new ItemStack(Blocks.OBSIDIAN), new ItemStack(ModItems.OBSIDIAN_INGOT), 0.4F);
-        GameRegistry.addShapedRecipe(Blocks.CRAFTING_TABLE.getRegistryName(),null,new ItemStack(ModBlocks.SCRAMBLE_BENCH),
-                "WW",
-                "WW",
-                'W', Blocks.PLANKS);
         //ScrambleFurnaceRecipes.instance().addRecipe(ModBlocks.RUBY_ORE, new ItemStack(ModItems.RUBY), 0.3f);
 
     }

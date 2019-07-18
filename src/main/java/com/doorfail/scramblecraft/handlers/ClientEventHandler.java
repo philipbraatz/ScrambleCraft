@@ -1,26 +1,13 @@
 package com.doorfail.scramblecraft.handlers;
 
-import com.doorfail.scramblecraft.block.scramble_bench.GUIScrambleBench;
-import com.doorfail.scramblecraft.block.scramble_bench.RecipesGUIScrambleBench;
-import com.doorfail.scramblecraft.init.ModBlocks;
-import com.doorfail.scramblecraft.recipe.ModRecipe;
-import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
-import com.doorfail.scramblecraft.recipe.recipe_book.ScrambleBookClient;
+import com.doorfail.scramblecraft.recipe.recipe_book.ScrambleSubRecipes;
 import com.doorfail.scramblecraft.recipe.recipe_book.gui.GUIScrambleBook;
-import com.doorfail.scramblecraft.recipe.recipe_book.ScrambleList;
 import com.doorfail.scramblecraft.util.Reference;
-import com.doorfail.scramblecraft.util.ReflectionUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButtonImage;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.Item;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.relauncher.Side;
 
 import java.util.*;
@@ -51,7 +38,7 @@ public class ClientEventHandler
     static int posx = 0;
     static int posy = 0;
 
-    static Map<CreativeTabs, List<ScrambleList>> cache = new HashMap();
+    static Map<CreativeTabs, List<ScrambleSubRecipes>> cache = new HashMap();
 
     public static boolean hidden = true;
     static GUIScrambleBook last = null;
@@ -104,9 +91,9 @@ public class ClientEventHandler
         //                      }
         //                      CreativeTabs category = (CreativeTabs)ReflectionUtils.getPrivateFieldValue(net.minecraft.client.gui.recipebook.GuiButtonRecipeTab.class, gbrt, "category");
 //
-        //                     List<ScrambleList> l = (List) ScrambleBookClient.RECIPES_BY_TAB.get(category);
+        //                     List<ScrambleSubRecipes> l = (List) ScrambleBookClient.RECIPES_BY_TAB.get(category);
         //                      if (l != null) {
-        //                          for (ScrambleList rl : l) {
+        //                          for (ScrambleSubRecipes rl : l) {
         //                              rl.updateKnownRecipes(Minecraft.getMinecraft().player.getRecipeBook());
         //                          }
         //                      }
@@ -125,14 +112,14 @@ public class ClientEventHandler
         //                      if (ct == CreativeTabs.DECORATIONS || ct == CreativeTabs.TRANSPORTATION || ct == CreativeTabs.MISC) {
         //                          continue;
         //                      }
-        //                      List<ScrambleList> list = new ArrayList<>();
+        //                      List<ScrambleSubRecipes> list = new ArrayList<>();
         //                      if (cache.containsKey(ct)) {
         //                          list.addAll((Collection)cache.get(ct));
         //                      } else {
 //
         //                         for (ResourceLocation rl : Item.REGISTRY.getKeys()) {
         //                              Item item = (Item)Item.REGISTRY.getObject(rl);
-        //                              ScrambleList recList = new ScrambleList();
+        //                              ScrambleSubRecipes recList = new ScrambleSubRecipes();
         //                              if (item.getCreativeTab() == ct) {
         //                                  for (ModRecipe r : ModRecipeRegistry.getModRecipeList(Minecraft.getMinecraft().player.getUniqueID(),ModBlocks.SCRAMBLE_BENCH.getRegistryName())) {
         //                                      if (r.getRecipeOutput() != null && r.getRecipeOutput().getItem() == item) {
