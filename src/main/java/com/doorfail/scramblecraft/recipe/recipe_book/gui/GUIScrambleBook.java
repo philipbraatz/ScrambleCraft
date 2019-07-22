@@ -105,10 +105,12 @@ public class GUIScrambleBook extends Gui implements net.minecraft.client.gui.rec
         this.mc.player.inventory.fillStackedContents(this.stackedContents, false);
         p_193014_2_.fillStackedContents(this.stackedContents);
         this.searchBar = new GuiTextField(0, this.mc.fontRenderer, i + 25, j + 14, 80, this.mc.fontRenderer.FONT_HEIGHT + 5);
-        this.searchBar.setMaxStringLength(50);
+        this.searchBar.setMaxStringLength(3);//DEBUG normal 50
         this.searchBar.setEnableBackgroundDrawing(false);
         this.searchBar.setVisible(true);
         this.searchBar.setTextColor(16777215);
+        this.searchBar.setText("WIP");
+        this.lastSearch = "WIP";
         this.scrambleBookPage.init(this.mc, i, j,serverHelper);
         this.scrambleBookPage.addListener(this);
         this.toggleRecipesBtn = new GuiButtonToggle(0, i + 110, j + 12, 26, 16, this.recipeBook.isFilteringCraftable());
@@ -191,7 +193,8 @@ public class GUIScrambleBook extends Gui implements net.minecraft.client.gui.rec
 
             //Search Bar Sorting
             String s = this.searchBar.getText();
-            if (!s.isEmpty()) {//TODO Reimplement search functionality
+            if (false)//!s.isEmpty())//TODO Reimplement search functionality
+            {
                 ObjectSet<ScrambleSubRecipes> objectset = new ObjectLinkedOpenHashSet(this.mc.getSearchTree(SearchTreeManager.RECIPES).search(s.toLowerCase(Locale.ROOT)));
                 list1.removeIf((recipe) -> {
                     return !objectset.contains(recipe);
@@ -394,8 +397,9 @@ public class GUIScrambleBook extends Gui implements net.minecraft.client.gui.rec
             if (keycode == 1 && !this.isOffsetNextToMainGUI()) {
                 this.setVisible(false);
                 return true;
-            } else {
-                if (GameSettings.isKeyDown(this.mc.gameSettings.keyBindChat) && !this.searchBar.isFocused()) {
+            } else if(false) {
+                if (GameSettings.isKeyDown(this.mc.gameSettings.keyBindChat) && !this.searchBar.isFocused())
+                {
                     this.searchBar.setFocused(true);
                 } else if (this.searchBar.textboxKeyTyped(typedChar, keycode)) {
                     String s1 = this.searchBar.getText().toLowerCase(Locale.ROOT);
@@ -413,6 +417,7 @@ public class GUIScrambleBook extends Gui implements net.minecraft.client.gui.rec
         } else {
             return false;
         }
+        return false;
     }
 
     private void pirateRecipe(String text) {

@@ -102,6 +102,7 @@ public class ContainerScrambleBench extends Container
     /**
      * Called when the container is closed.
      */
+    @Override
     public void onContainerClosed(EntityPlayer playerIn)
     {
         if (!playerIn.world.isRemote)
@@ -176,9 +177,9 @@ public class ContainerScrambleBench extends Container
                                     slot.setCount(64);
                                     logger.warn("Overflow Itemstack");
                                 }
-                                if(slot.getCount()>0)
-                                    slot.setCount(slot.getCount()-1);
-                                entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, i, slot));//half each slot
+                                //if(slot.getCount()>0)
+                                //    slot.setCount(slot.getCount()-1);
+                                entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, i+1, slot));//half each slot
                             }
 
                             returnItem.setCount(ModRecipeRegistry.previousStackSize);//stops dupe after the fact

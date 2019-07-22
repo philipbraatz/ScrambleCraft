@@ -1,5 +1,6 @@
 package com.doorfail.scramblecraft.recipe;
 
+import com.doorfail.scramblecraft.init.ModBlocks;
 import com.google.common.collect.Lists;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
@@ -15,6 +16,7 @@ import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.ForgeRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,7 +43,7 @@ public class ModRecipeRegistry {
             return true;
         else
         {
-            if(warn)
+            if(false)
                 logger.warn("Player with ID:"+playerId.toString()+" does not exist");
             return false;
         }
@@ -355,7 +357,6 @@ public class ModRecipeRegistry {
     public static void init() {
         craftingManager.init();
         //removeRecipes(Blocks.CRAFTING_TABLE);
-        highestId = ((ForgeRegistry)ForgeRegistries.RECIPES).getValuesCollection().size()+8;
 
         ForgeRegistry<IRecipe> recipeRegistry = (ForgeRegistry<IRecipe>) ForgeRegistries.RECIPES;
         ArrayList<IRecipe> recipes = Lists.newArrayList(recipeRegistry.getValuesCollection());
@@ -367,7 +368,22 @@ public class ModRecipeRegistry {
             ItemStack output = r.getRecipeOutput();
             if (output.getItem() == Item.getItemFromBlock(Blocks.CRAFTING_TABLE))
             {
+            //    recipeRegistry.remove(r.getRegistryName());
+                GameRegistry.addShapedRecipe(r.getRegistryName(),null,new ItemStack(ModBlocks.SCRAMBLE_BENCH),
+                        "WW",
+                        "WW",
+                        'W', Blocks.PLANKS);
+                //recipeRegistry.register(DummyRecipe.from(r));
+            }
+            else if (output.getItem() == Item.getItemFromBlock(Blocks.FURNACE))
+            {
                 recipeRegistry.remove(r.getRegistryName());
+                GameRegistry.addShapedRecipe(r.getRegistryName(),null,new ItemStack(ModBlocks.SCRAMBLE_FURNACE_OFF),
+                        "CCC",
+                        "CAC",
+                        "CCC",
+                        'C',Blocks.COBBLESTONE,
+                        'A', Items.AIR);
                 //recipeRegistry.register(DummyRecipe.from(r));
             }
         }
@@ -456,14 +472,20 @@ public class ModRecipeRegistry {
                 List<ItemStack> newResultStack = tryToScramble(entityPlayer.getUniqueID(),craftingBlock,new InventoryCrafting(container,oldRecipe.getRecipeWidth(),oldRecipe.getRecipeHeight()),ingredient,true);
                 List<ItemStack> oldResultStack = recipes.get(oldIndex).checkResult();
 
+                ModRecipe newRecipe=playerRecipeList.get(entityPlayer.getUniqueID()).get(newIndex);
+
                 //get Ingredients for recipes that use the output item
                 if (newResultStack !=new ArrayList<ItemStack>()) {
-                    recipes.get(newIndex).setNewOutput(newResultStack);//current index -> change Item
-                    recipes.get(oldIndex).setNewOutput(oldResultStack);//changed index -> current item
+
+                    //Swap output items here
+                    oldRecipe.setNewOutput(Arrays.asList(newRecipe.getRecipeOutput()));
+                    newRecipe.setNewOutput(Arrays.asList(oldRecipe.getRecipeOutput()));
+
                     //logger.info("{} swapped with {}",oldIngredient.toString(), newIngredient.toString());
                 }
-                ModCraftingManager.updateRecipe(entityPlayer, craftingBlock, recipes.get(oldIndex),newIndex );
-                ModCraftingManager.updateRecipe(entityPlayer, craftingBlock, recipes.get(newIndex), oldIndex);
+                //place back into list
+                ModCraftingManager.updateRecipe(entityPlayer, craftingBlock, oldRecipe,oldIndex );
+                ModCraftingManager.updateRecipe(entityPlayer, craftingBlock, newRecipe, newIndex);
             }
         }
     }

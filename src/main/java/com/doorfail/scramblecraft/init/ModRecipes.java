@@ -50,16 +50,16 @@ public class ModRecipes {
             if (output.getItem() == Item.getItemFromBlock(Blocks.CRAFTING_TABLE))
             {
                 recipeRegistry.remove(r.getRegistryName());
-                GameRegistry.addShapedRecipe(Blocks.CRAFTING_TABLE.getRegistryName(),null,new ItemStack(ModBlocks.SCRAMBLE_BENCH),
+                GameRegistry.addShapedRecipe(r.getRegistryName(),null,new ItemStack(ModBlocks.SCRAMBLE_BENCH),
                         "WW",
                         "WW",
                         'W', Blocks.PLANKS);
-                //recipeRegistry.register(DummyRecipe.from(r));
+                recipeRegistry.register(DummyRecipe.from(r));
             }
             else if (output.getItem() == Item.getItemFromBlock(Blocks.FURNACE))
             {
                 recipeRegistry.remove(r.getRegistryName());
-                GameRegistry.addShapedRecipe(Blocks.FURNACE.getRegistryName(),null,new ItemStack(ModBlocks.SCRAMBLE_FURNACE_OFF),
+                GameRegistry.addShapedRecipe(r.getRegistryName(),null,new ItemStack(ModBlocks.SCRAMBLE_FURNACE_OFF),
                         "CCC",
                         "CAC",
                         "CCC",

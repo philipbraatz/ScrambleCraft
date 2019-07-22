@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 public class BlockScrambleFurnace extends BlockContainer {
-        public static final PropertyDirection FACING = BlockHorizontal.FACING;
+        //public static final PropertyDirection MY_FACING = BlockHorizontal.FACING;
         private final boolean isBurning;
         private static boolean keepInventory;
 
@@ -44,7 +44,7 @@ public class BlockScrambleFurnace extends BlockContainer {
             setHarvestLevel("pickaxe", 2);
             setResistance(20.0f);
             setSoundType(SoundType.STONE);
-            this.setDefaultState(this.blockState.getBaseState().withProperty(FACING, EnumFacing.NORTH));
+            this.setDefaultState(this.blockState.getBaseState().withProperty(BlockHorizontal.FACING, EnumFacing.NORTH));
             this.isBurning = isBurning;
 
             ModBlocks.BLOCKS.add(this);
@@ -83,7 +83,7 @@ public class BlockScrambleFurnace extends BlockContainer {
                 IBlockState iblockstate1 = worldIn.getBlockState(pos.south());
                 IBlockState iblockstate2 = worldIn.getBlockState(pos.west());
                 IBlockState iblockstate3 = worldIn.getBlockState(pos.east());
-                EnumFacing enumfacing = (EnumFacing) state.getValue(FACING);
+                EnumFacing enumfacing = (EnumFacing) state.getValue(BlockHorizontal.FACING);
 
                 if (enumfacing == EnumFacing.NORTH && iblockstate.isFullBlock() && !iblockstate1.isFullBlock()) {
                     enumfacing = EnumFacing.SOUTH;
@@ -95,7 +95,7 @@ public class BlockScrambleFurnace extends BlockContainer {
                     enumfacing = EnumFacing.WEST;
                 }
 
-                worldIn.setBlockState(pos, state.withProperty(FACING, enumfacing), 2);
+                worldIn.setBlockState(pos, state.withProperty(BlockHorizontal.FACING, enumfacing), 2);
             }
         }
 
@@ -105,11 +105,11 @@ public class BlockScrambleFurnace extends BlockContainer {
             keepInventory = true;
 
             if (active) {
-                worldIn.setBlockState(pos, ModBlocks.SCRAMBLE_FURNACE_ON.getDefaultState().withProperty(FACING, iblockstate.getValue(FACING)), 3);
-                worldIn.setBlockState(pos, ModBlocks.SCRAMBLE_FURNACE_ON.getDefaultState().withProperty(FACING, iblockstate.getValue(FACING)), 3);
+                worldIn.setBlockState(pos, ModBlocks.SCRAMBLE_FURNACE_ON.getDefaultState().withProperty(BlockHorizontal.FACING, iblockstate.getValue(BlockHorizontal.FACING)), 3);
+                worldIn.setBlockState(pos, ModBlocks.SCRAMBLE_FURNACE_ON.getDefaultState().withProperty(BlockHorizontal.FACING, iblockstate.getValue(BlockHorizontal.FACING)), 3);
             } else {
-                worldIn.setBlockState(pos, ModBlocks.SCRAMBLE_FURNACE_OFF.getDefaultState().withProperty(FACING, iblockstate.getValue(FACING)), 3);
-                worldIn.setBlockState(pos, ModBlocks.SCRAMBLE_FURNACE_OFF.getDefaultState().withProperty(FACING, iblockstate.getValue(FACING)), 3);
+                worldIn.setBlockState(pos, ModBlocks.SCRAMBLE_FURNACE_OFF.getDefaultState().withProperty(BlockHorizontal.FACING, iblockstate.getValue(BlockHorizontal.FACING)), 3);
+                worldIn.setBlockState(pos, ModBlocks.SCRAMBLE_FURNACE_OFF.getDefaultState().withProperty(BlockHorizontal.FACING, iblockstate.getValue(BlockHorizontal.FACING)), 3);
             }
 
             keepInventory = false;
@@ -127,12 +127,12 @@ public class BlockScrambleFurnace extends BlockContainer {
 
         @Override
         public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY, float hitZ, int meta, EntityLivingBase placer) {
-            return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing().getOpposite());
+            return this.getDefaultState().withProperty(BlockHorizontal.FACING, placer.getHorizontalFacing().getOpposite());
         }
 
         @Override
         public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state, EntityLivingBase placer, ItemStack stack) {
-            worldIn.setBlockState(pos, state.withProperty(FACING, placer.getHorizontalFacing().getOpposite()));
+            worldIn.setBlockState(pos, state.withProperty(BlockHorizontal.FACING, placer.getHorizontalFacing().getOpposite()));
             if (stack.hasDisplayName()) {
                 TileEntity tileentity = worldIn.getTileEntity(pos);
                 if (tileentity instanceof TileEntityScrambleFurnace) {
@@ -177,26 +177,26 @@ public class BlockScrambleFurnace extends BlockContainer {
             if (enumfacing.getAxis() == EnumFacing.Axis.Y) {
                 enumfacing = EnumFacing.NORTH;
             }
-            return this.getDefaultState().withProperty(FACING, enumfacing);
+            return this.getDefaultState().withProperty(BlockHorizontal.FACING, enumfacing);
         }
 
         @Override
         public int getMetaFromState(IBlockState state) {
-            return ((EnumFacing) state.getValue(FACING)).getIndex();
+            return ((EnumFacing) state.getValue(BlockHorizontal.FACING)).getIndex();
         }
 
         @Override
         public IBlockState withRotation(IBlockState state, Rotation rot) {
-            return state.withProperty(FACING, rot.rotate((EnumFacing) state.getValue(FACING)));
+            return state.withProperty(BlockHorizontal.FACING, rot.rotate((EnumFacing) state.getValue(BlockHorizontal.FACING)));
         }
 
         @Override
         public IBlockState withMirror(IBlockState state, Mirror mirrorIn) {
-            return state.withRotation(mirrorIn.toRotation((EnumFacing) state.getValue(FACING)));
+            return state.withRotation(mirrorIn.toRotation((EnumFacing) state.getValue(BlockHorizontal.FACING)));
         }
 
         @Override
         protected BlockStateContainer createBlockState() {
-            return new BlockStateContainer(this, new IProperty[]{FACING});
+            return new BlockStateContainer(this, new IProperty[]{BlockHorizontal.FACING});
         }
     }
