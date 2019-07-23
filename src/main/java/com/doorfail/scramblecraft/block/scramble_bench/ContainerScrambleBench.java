@@ -165,22 +165,22 @@ public class ContainerScrambleBench extends Container
                         if (returnItem.getCount() < 1)
                             returnItem.setCount(1);
                         //TODO dupe is still a problem
-                        else if (craftedLast)//returnItem.getCount() >= ModRecipeRegistry.previousStackSize * 2)//Temporary fix for output craft doubling
+                        else if (returnItem.getCount() >= ModRecipeRegistry.previousStackSize * 2)//Temporary fix for output craft doubling
                         {
                             craftedLast =false;
-                            InventoryCrafting halfGrid = craftingGrid;
-                            //returnItem.setCount(returnItem.getCount()/2);//half output slot;
-                            for (int i = 1; i < craftingGrid.getSizeInventory() + 1; i++) {
-                                ItemStack slot = craftingGrid.getStackInSlot(i);
-                                if (slot.getCount() > 64)
-                                {
-                                    slot.setCount(64);
-                                    logger.warn("Overflow Itemstack");
-                                }
-                                //if(slot.getCount()>0)
-                                //    slot.setCount(slot.getCount()-1);
-                                entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, i+1, slot));//half each slot
-                            }
+                            //InventoryCrafting halfGrid = craftingGrid;
+                            ////returnItem.setCount(returnItem.getCount()/2);//half output slot;
+                            //for (int i = 1; i < craftingGrid.getSizeInventory() + 1; i++) {
+                            //    ItemStack slot = craftingGrid.getStackInSlot(i);
+                            //    if (slot.getCount() > 64)
+                            //    {
+                            //        slot.setCount(64);
+                            //        logger.warn("Overflow Itemstack");
+                            //    }
+                            //    //if(slot.getCount()>0)
+                            //    //    slot.setCount(slot.getCount()-1);
+                            //    entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, i+1, slot));//half each slot
+                            //}
 
                             returnItem.setCount(ModRecipeRegistry.previousStackSize);//stops dupe after the fact
                         }
@@ -264,5 +264,43 @@ public class ContainerScrambleBench extends Container
             return null;
         }
 
+    }
+
+    @Override
+    public void addListener(IContainerListener listener)
+    {
+        super.addListener(listener);
+        listener.sendAllWindowProperties(this, this.benchInventory);
+    }
+
+    @Override
+    public void detectAndSendChanges()
+    {
+        super.detectAndSendChanges();
+
+    //    for (int i = 0; i < this.listeners.size(); ++i)
+    //    {
+    //        IContainerListener icontainerlistener = this.listeners.get(i);
+//
+    //        if (this.ovenBurnTime != this.tileFurnace.getField(0))
+    //        {
+    //            icontainerlistener.sendWindowProperty(this, 0, this.tileFurnace.getField(0));
+    //        }
+//
+    //        if (this.currentItemBurnTime != this.tileFurnace.getField(1))
+    //        {
+    //            icontainerlistener.sendWindowProperty(this, 1, this.tileFurnace.getField(1));
+    //        }
+//
+    //        if (this.totalCookTime != this.tileFurnace.getField(3))
+    //        {
+    //            icontainerlistener.sendWindowProperty(this, 3, this.tileFurnace.getField(3));
+    //        }
+    //    }
+//
+    //    this.cookTime = this.tileFurnace.getField(2);
+    //    this.ovenBurnTime = this.tileFurnace.getField(0);
+    //    this.currentItemBurnTime = this.tileFurnace.getField(1);
+    //    this.totalCookTime = this.tileFurnace.getField(3);
     }
 }
