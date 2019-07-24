@@ -50,23 +50,23 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
 
     public ModRecipe(ResourceLocation craftingBlock, List<Ingredient> inputs,List<ItemStack> outputs,int width, int height,boolean canScramble)
     {
-        SetComponents(craftingBlock,inputs,outputs, width, height,canScramble,true);
+        SetComponents(craftingBlock,inputs,outputs, width, height,canScramble,false);
     }
     public ModRecipe(ResourceLocation craftingBlock, List<Ingredient> inputs,List<ItemStack> outputs,int width, int height)
     {
-        SetComponents(craftingBlock,inputs,outputs, width,  height,true,true);
+        SetComponents(craftingBlock,inputs,outputs, width,  height,true,false);
     }
     public ModRecipe(ResourceLocation craftingBlock, Ingredient input,List<ItemStack> outputs,int width, int height)
     {
         List<Ingredient> ingredients = new ArrayList<>();
         ingredients.add(input);
-        SetComponents(craftingBlock,ingredients,outputs, width, height,true,true);
+        SetComponents(craftingBlock,ingredients,outputs, width, height,true,false);
     }
     public ModRecipe(ResourceLocation craftingBlock, List<Ingredient> inputs,ItemStack output,int width, int height)
     {
         List<ItemStack> ingredients = new ArrayList<>();
         ingredients.add(output);
-        SetComponents(craftingBlock,inputs,ingredients, width,  height,true,true);
+        SetComponents(craftingBlock,inputs,ingredients, width,  height,true,false);
     }
     public ModRecipe(ResourceLocation craftingBlock, Ingredient input,ItemStack output,int width, int height)
     {
@@ -74,11 +74,11 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
         List<ItemStack> outgoing = new ArrayList<>();
         ingredients.add(input);
         outgoing.add(output);
-        SetComponents(craftingBlock,ingredients,outgoing, width, height,true,true);
+        SetComponents(craftingBlock,ingredients,outgoing, width, height,true,false);
     }
     private ModRecipe(ResourceLocation craftingBlock, List<Ingredient> inputs,List<ItemStack> outputs,int width, int height,boolean NA_cantScramble,boolean bypass)
     {
-        SetComponents(craftingBlock,inputs,outputs, width, height,false,true);
+        SetComponents(craftingBlock,inputs,outputs, width, height,false,bypass);
     }
 
     private void SetComponents(ResourceLocation craftingBlock, List<Ingredient> inputs,List<ItemStack> outputs,int width, int height,boolean canScramble,boolean bypass)
@@ -115,7 +115,7 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
                 if(it != ItemStack.EMPTY)
                     isEmpty =false;
             }
-            if(isEmpty&& !bypass)
+            if(isEmpty && !bypass)
                 throw new InvalidParameterException("outputs cannot be empty");
 
             inputIngredients = inputs;
@@ -171,6 +171,11 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
     {
         return outputItemStacks;
     }
+
+    public void unCraftItem()
+    {
+        count--;
+    }
     //only use when giving item to player
     public List<ItemStack> craftItem(EntityPlayer player, IInventory crafting, Container container)
     {
@@ -186,7 +191,7 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
         for (ItemStack it:outputItemStacks) {
             if(it.getCount()<=0) {
                 dirty =true;
-                it.setCount(1);//fix count
+                it.setCount(1);//keeps recipes from disapearing
             }
             itList.add(it);
         }

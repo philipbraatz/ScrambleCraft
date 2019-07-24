@@ -223,10 +223,11 @@ public class TileEntityScrambleBench extends TileEntityLockableLoot implements I
     @Override
     public boolean canExtractItem(int index, ItemStack stack, EnumFacing direction)
     {
-        if(direction == EnumFacing.DOWN && index ==scrambleBenchMatrix.size()+1)
-            return true;
-        else
-            return false;
+        return true;
+        //if(direction == EnumFacing.DOWN && index ==scrambleBenchMatrix.size()+1)
+        //    return true;
+        //else
+        //    return false;
     }
 
     @Override

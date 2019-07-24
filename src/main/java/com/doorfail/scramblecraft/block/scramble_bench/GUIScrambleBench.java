@@ -150,6 +150,6 @@ public class GUIScrambleBench extends GuiContainer implements IRecipeShownListen
     //doesnt actually do anything
     @Override
     public GuiRecipeBook func_194310_f() {
-        return new GuiRecipeBook();
+       return new GuiRecipeBook();
     }
 }

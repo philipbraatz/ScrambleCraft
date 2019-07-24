@@ -23,7 +23,7 @@ public class ReflectionUtils
 
     static  {
         System.out.println("Loading remap tables...");
-        BufferedReader br = new BufferedReader(new InputStreamReader(ReflectionUtils.class.getResourceAsStream("/assets/scramblecraft/srg/mcp-srg.srg")));
+        BufferedReader br = new BufferedReader(new InputStreamReader(ReflectionUtils.class.getResourceAsStream("/assets/scramblecraft/srg/mcp-srgDELETE.srg")));
         String line = null;
         try {
             while ((line = br.readLine()) != null) {

@@ -22,6 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.doorfail.scramblecraft.util.Reference.MODID;
 
@@ -29,12 +30,12 @@ import static com.doorfail.scramblecraft.util.Reference.MODID;
 public class ModRecipeRegistry {
     private static Logger logger = LogManager.getLogger(MODID);
 
-    private static Map<UUID, List<ModRecipe>> playerRecipeList = new HashMap<>();//playerID,recipes
+    private static Map<UUID, List<ModRecipe>> playerRecipeList = new ConcurrentHashMap<>();//playerID,recipes
     public static ModCraftingManager craftingManager = new ModCraftingManager();
 
     private static int newIndex =-1;
     private static int oldIndex =-1;
-    public static int previousStackSize =222;//big stack number
+    public static ItemStack previousStackSize =ItemStack.EMPTY;//big stack number
 
     private static int highestId =0;
 
@@ -63,8 +64,8 @@ public class ModRecipeRegistry {
         if(!isPlayerInRegistry(playerId))
             return false;
         else {
-            for (ModRecipe r : playerRecipeList.get(playerId)) {
-                if (r.craftingMachine == craftingMachine)
+            for (Object r : playerRecipeList.get(playerId).toArray()) {
+                if (((ModRecipe)r).craftingMachine == craftingMachine)
                     return true;
             }
             return false;
@@ -229,7 +230,7 @@ public class ModRecipeRegistry {
             return filter;
         }
         else
-            return recipes;
+            return recipes;//return nothing
     }
 
     public static List<IRecipe> getIRecipeList(UUID playerId,ResourceLocation craftingMachine)

@@ -1,6 +1,6 @@
 {
     "pack": {
-        "description": "This is for my personal code library",
+        "description": "scrambles recipes inside custom version of crafting machines",
         "pack_format": 3,
         "_comment": ""
     }

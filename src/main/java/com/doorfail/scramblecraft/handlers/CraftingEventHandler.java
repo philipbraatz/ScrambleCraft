@@ -22,7 +22,6 @@ public class CraftingEventHandler {
 
             if (event.craftMatrix.getSizeInventory() == 4) {
                 hasCrafted =true;
-                //event.setCanceled(true);
             } else {
                 //logger.info("Crafting - " + event.crafting);
             }

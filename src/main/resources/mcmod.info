@@ -1,14 +1,14 @@
 [
 {
   "modid": "scramblecraft",
-  "name": "Scramble Craft",
+  "name": "Scramble Recipe",
   "description": "Every time you craft something there is a chance the result will change.",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
   "authorList": ["Doorfail"],
-  "credits": "Choonster, DaRealTurtyWurty",
+  "credits": "TropicalShadow, Choonster, DaRealTurtyWurty",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []

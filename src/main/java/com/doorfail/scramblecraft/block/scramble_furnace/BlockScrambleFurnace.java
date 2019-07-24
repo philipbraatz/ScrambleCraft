@@ -14,6 +14,7 @@ import net.minecraft.block.properties.PropertyDirection;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
@@ -46,10 +47,10 @@ public class BlockScrambleFurnace extends BlockContainer {
             setSoundType(SoundType.STONE);
             this.setDefaultState(this.blockState.getBaseState().withProperty(BlockHorizontal.FACING, EnumFacing.NORTH));
             this.isBurning = isBurning;
+            this.setCreativeTab(CreativeTabs.DECORATIONS);
 
             ModBlocks.BLOCKS.add(this);
             ModItems.ITEMS.add(new ItemBlock(this).setRegistryName(this.getRegistryName()));
-
         }
 
         @Override

@@ -1,9 +1,12 @@
 
 {
-    "parent": "block/orientable",
+    "parent": "block/cube",
     "textures": {
-        "top": "scramblecraft:blocks/scramble_bench_top",
-        "front": "scramblecraft:blocks/scramble_bench_front",
-        "side": "scramblecraft:blocks/scramble_bench_side"
+        "up": "scramblecraft:blocks/scramble_bench_top",
+        "down": "minecraft:blocks/planks_oak",
+        "north": "scramblecraft:blocks/scramble_bench_front",
+        "south": "scramblecraft:blocks/scramble_bench_side",
+        "east": "scramblecraft:blocks/scramble_bench_side",
+        "west": "scramblecraft:blocks/scramble_bench_side"
     }
 }
