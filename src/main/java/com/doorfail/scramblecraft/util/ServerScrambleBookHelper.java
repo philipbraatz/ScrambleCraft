@@ -50,7 +50,7 @@ public class ServerScrambleBookHelper {
                 this.playerMP = entityPlayerMP;
                 this.iRecipe = iRecipe;
                 this.forceStackSize = forceStackSize;
-                this.slotList = entityPlayerMP.openContainer.inventorySlots;
+                this.slotList = entityPlayerMP.openContainer.inventorySlots;//TODO CRASH - Null Pointer Exception: updating screen events
                 Container container = entityPlayerMP.openContainer;
                 this.craftResult = null;
                 this.matrix = null;

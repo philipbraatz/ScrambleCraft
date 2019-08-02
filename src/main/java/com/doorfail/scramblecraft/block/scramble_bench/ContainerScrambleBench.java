@@ -1,16 +1,12 @@
 package com.doorfail.scramblecraft.block.scramble_bench;
 
 
-import com.doorfail.scramblecraft.handlers.CraftingEventHandler;
 import com.doorfail.scramblecraft.init.ModBlocks;
 import com.doorfail.scramblecraft.recipe.ModCraftingManager;
 import com.doorfail.scramblecraft.recipe.ModRecipe;
 import com.doorfail.scramblecraft.recipe.ModRecipeRegistry;
-import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
 import net.minecraft.inventory.*;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.SPacketSetSlot;
@@ -50,6 +46,8 @@ public class ContainerScrambleBench extends Container {
 
     //Prevent Duping on large scale
     private int matrixItemCount = 0;
+    private int matrixItemCountPrevious2 = 0;
+    private int matrixItemCountPrevious1 = 0;
 
     private static Map<UUID, EntityPlayerMP> playerMap = new HashMap<>();
 
@@ -137,8 +135,13 @@ public class ContainerScrambleBench extends Container {
     @Override
     protected void slotChangedCraftingGrid(World world, EntityPlayer entityPlayer, InventoryCrafting craftingGrid, InventoryCraftResult IncraftResult) {
         if (!world.isRemote) {
-            for (int i = 0; i < craftingGrid.getSizeInventory(); i++)
+            matrixItemCountPrevious2 =matrixItemCountPrevious1;
+            matrixItemCountPrevious1 =matrixItemCount;
+            matrixItemCount=0;
+            for (int i = 0; i < craftingGrid.getSizeInventory(); i++) {
                 benchInventory.setInventorySlotContents(i, craftingGrid.getStackInSlot(i));
+                matrixItemCount += craftingGrid.getStackInSlot(i).getCount();
+            }
 
             EntityPlayerMP entityplayermp = (EntityPlayerMP) entityPlayer;
             if (!playerMap.containsKey(entityplayermp.getUniqueID()))
@@ -156,12 +159,19 @@ public class ContainerScrambleBench extends Container {
                         IncraftResult.setRecipeUsed(gridRecipe);
 
                         //ModRecipeRegistry.checkResult(ModRecipes.getIngredientAsItemStacks(shapedRecipe.getIngredients()),entityPlayer.getUniqueID(),ModBlocks.SCRAMBLE_BENCH.getRegistryName());
-                        if(craftResult.getStackInSlot(0).getItem()!=Items.AIR )
-                        {
-                            ModRecipe prevRecipe = (ModRecipe) ModCraftingManager.getRecipe(craftMatrix.getStackInSlot(0).getItem().getRegistryName());
-                            prevRecipe.unCraftItem();//prevents scrambling without crafting
-                        }
-                        ItemStack returnItem = gridRecipe.craftItem(entityPlayer,craftingGrid,this).get(0);
+                        //if(craftResult.getStackInSlot(0).getItem()!=Items.AIR )
+                        //{
+                        //    ModRecipe prevRecipe = (ModRecipe) ModCraftingManager.getRecipe(IncraftResult.getStackInSlot(0).getItem().getRegistryName());
+                        //    prevRecipe.unCraftItem();//prevents scrambling without crafting
+                        //}
+                        ItemStack returnItem;
+                        if(matrixItemCountPrevious2 != matrixItemCount &&
+                                ( matrixItemCountPrevious2 !=0 || matrixItemCountPrevious1 ==0 )&&
+                                matrixItemCountPrevious1 != matrixItemCount
+                        )
+                            returnItem = gridRecipe.craftItem(entityPlayer,craftingGrid,this).get(0);
+                        else
+                            returnItem =gridRecipe.checkResult().get(0);
 
                         returnItem.setCount(1);//force EVERY item to return previous size
 
@@ -172,11 +182,13 @@ public class ContainerScrambleBench extends Container {
                         //server side
                         IncraftResult.setInventorySlotContents(0, returnItem);
                         //visual inside crafting table
+                        decrementMatrix(entityPlayer,0);//Refreshes inventory, stops duping
                         entityplayermp.connection.sendPacket(new SPacketSetSlot(this.windowId, 0, returnItem));//output
                     }
 
                 } catch (Exception e) {
-                    logger.info(e);
+                    logger.warn("Error: ");
+                    e.printStackTrace();
                 }
             } else {
                 //Invalid Recipe
@@ -212,14 +224,14 @@ public class ContainerScrambleBench extends Container {
             if (index < this.craftMatrix.getSizeInventory()) {
                 if (!this.mergeItemStack(itemstack1, this.craftMatrix.getSizeInventory(), this.inventorySlots.size(), true)) {
                     if (index == 0)
-                        decrementMatrix(playerIn);
+                        decrementMatrix(playerIn,1);
                     slotChangedCraftingGrid(world, playerIn, craftMatrix, craftResult);
 
                     return ItemStack.EMPTY;
                 }
             } else if (!this.mergeItemStack(itemstack1, 0, this.craftMatrix.getSizeInventory(), false)) {
                 if (index == 0)
-                    decrementMatrix(playerIn);
+                    decrementMatrix(playerIn,1);
                 slotChangedCraftingGrid(world, playerIn, craftMatrix, craftResult);
                 return ItemStack.EMPTY;
             }
@@ -230,7 +242,7 @@ public class ContainerScrambleBench extends Container {
                 slot.onSlotChanged();
         }
         if (index == 0)
-            decrementMatrix(playerIn);
+            decrementMatrix(playerIn,1);
         slotChangedCraftingGrid(world, playerIn, craftMatrix, craftResult);
         return itemstack;
     }
@@ -256,34 +268,34 @@ public class ContainerScrambleBench extends Container {
     @Override
     public void detectAndSendChanges() {
         super.detectAndSendChanges();
-
-        //    for (int i = 0; i < this.listeners.size(); ++i)
-        //    {
-        //        IContainerListener icontainerlistener = this.listeners.get(i);
+        //craftedLast=true;
 //
-        //        if (this.ovenBurnTime != this.tileFurnace.getField(0))
-        //        {
-        //            icontainerlistener.sendWindowProperty(this, 0, this.tileFurnace.getField(0));
-        //        }
-//
-        //        if (this.currentItemBurnTime != this.tileFurnace.getField(1))
-        //        {
-        //            icontainerlistener.sendWindowProperty(this, 1, this.tileFurnace.getField(1));
-        //        }
-//
-        //        if (this.totalCookTime != this.tileFurnace.getField(3))
-        //        {
-        //            icontainerlistener.sendWindowProperty(this, 3, this.tileFurnace.getField(3));
+        //for(int i = 0; i < this.inventorySlots.size(); ++i) {
+        //    ItemStack clientStack = (this.inventorySlots.get(i)).getStack();
+        //    ItemStack serverStack = this.inventoryItemStacks.get(i);
+        //    if (!ItemStack.areItemStacksEqual(serverStack, clientStack)) {
+        //        boolean clientStackChanged = !ItemStack.areItemStacksEqualUsingNBTShareTag(serverStack, clientStack);
+        //        serverStack = clientStack.isEmpty() ? ItemStack.EMPTY : clientStack.copy();
+        //        this.inventoryItemStacks.set(i, serverStack);
+        //        if (clientStackChanged) {
+        //            if( i>9 || craftResult.isEmpty() || serverStack.getCount()+1 != clientStack.getCount())
+        //            {
+        //                craftedLast =false;
+        //            }else
+        //                logger.info("Item Was crafted!");
+        //            for(int j = 0; j < this.listeners.size(); ++j) {
+        //                (this.listeners.get(j)).sendSlotContents(this, i, serverStack);
+        //            }
         //        }
         //    }
-//
-        //    this.cookTime = this.tileFurnace.getField(2);
-        //    this.ovenBurnTime = this.tileFurnace.getField(0);
-        //    this.currentItemBurnTime = this.tileFurnace.getField(1);
-        //    this.totalCookTime = this.tileFurnace.getField(3);
+        //}
+    }
+    public void onCraftSlotUsed()
+    {
+
     }
 
-    public void decrementMatrix(EntityPlayer playerIn) {
+    public void decrementMatrix(EntityPlayer playerIn, int amount) {
         if (!world.isRemote) {
             for (int i = 1; i < craftMatrix.getSizeInventory() + 1; i++) {
                 ItemStack slot = craftMatrix.getStackInSlot(i);
@@ -292,7 +304,7 @@ public class ContainerScrambleBench extends Container {
                     logger.warn("Overflow Itemstack");
                 }
                 if (slot.getCount() > 0)
-                    slot.setCount(slot.getCount() - 1);
+                    slot.setCount(slot.getCount() - amount);
                 ((EntityPlayerMP) playerIn).connection.sendPacket(new SPacketSetSlot(this.windowId, i + 1, slot));//half each slot
             }
         }

@@ -166,6 +166,18 @@ public class ModRecipe extends IForgeRegistryEntry.Impl<IRecipe> implements ISha
         }
     }
 
+    public boolean HasBeenCrafted()
+    {
+        if(this.count ==0) {
+            ModRecipe testRecipe = this;
+            testRecipe.ResetCoolDown();
+            return testRecipe.coolDown != this.coolDown;//check if it has been scrambled from increased cooldown
+        }
+        else
+            return true;
+
+    }
+
     //only use for comparisons
     public List<ItemStack> checkResult()
     {

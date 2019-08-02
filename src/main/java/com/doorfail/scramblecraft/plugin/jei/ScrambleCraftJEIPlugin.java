@@ -27,12 +27,12 @@ public class ScrambleCraftJEIPlugin implements IModPlugin {
         DynamicItemStackRenderer itemStackRenderer = new DynamicItemStackRenderer();
         DynamicIngredientHelper ingredientHelper = new DynamicIngredientHelper();
         DynamicIngredientRenderer ingredientRenderer = new DynamicIngredientRenderer(itemStackRenderer,ingredientHelper);
-        registry.register(
-                DynamicItemStack.class,
-                Collections.emptyList(),
-                ingredientHelper,
-                ingredientRenderer
-        );
+        //registry.register(
+        //        DynamicItemStack.class,
+        //        Collections.emptyList(),
+        //        ingredientHelper,
+        //        ingredientRenderer
+        //);
     }
 
     public void registerCategories(IRecipeCategoryRegistration registry) {

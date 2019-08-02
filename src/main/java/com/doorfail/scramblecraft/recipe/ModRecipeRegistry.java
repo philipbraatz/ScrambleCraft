@@ -411,6 +411,7 @@ public class ModRecipeRegistry {
         return recipeRegistry;//IDK if this is required
     }
 
+    //only works with single item outputs
     public static List<ItemStack> tryToScramble(UUID playerId, ResourceLocation craftingBlock, InventoryCrafting inventoryCrafting, List<Ingredient> ingredient, boolean search)
     {
         List<ItemStack> newResultStack;
@@ -430,23 +431,26 @@ public class ModRecipeRegistry {
             if (newIndex == oldIndex)
                 isSame = true;
 
-            newResultStack = recipeList.get(newIndex).checkResult();
-            for (ItemStack itemStack:newResultStack
-            )
-                for (Ingredient it : ingredient) {
-                    //old == new
-                    for (ItemStack stack:it.getMatchingStacks())//Ingredient Options
-                        if (itemStack.getItem().getRegistryName() == stack.getItem().getRegistryName() ||//the same recipe
-                                itemStack == new ItemStack(Items.AIR))//EMPTY!
-                            isSame = true;
+            if(recipeList.get(newIndex).HasBeenCrafted()) {
+                newResultStack = recipeList.get(newIndex).checkResult();
+                for (ItemStack itemStack : newResultStack)
+                    for (Ingredient it : ingredient) {
+                        //old == new
+                        for (ItemStack stack : it.getMatchingStacks())//Ingredient Options
+                            if (itemStack.getItem().getRegistryName() == stack.getItem().getRegistryName() ||//the same recipe
+                                    itemStack == new ItemStack(Items.AIR))//EMPTY!
+                                isSame = true;
 
-                }
+                    }
+            }
+            else
+                return new ArrayList<>();//never crafted yet
         } while (isSame && counter < overflow);
 
         if(!isSame) {
             //compare every old Item with every new Item
             for (ItemStack itNew: newResultStack)
-                for (ItemStack itOld : recipeList.get(oldIndex).checkResult())
+                for (ItemStack itOld : recipeList.get(oldIndex).checkResult())//Only works for single item outputs
                     if (ModCraftingManager.areItemsRelated(inventoryCrafting, itNew.getItem(), itOld.getItem()))
                         return tryToScramble(playerId, craftingBlock, inventoryCrafting, ingredient, true);
                     else
@@ -483,10 +487,11 @@ public class ModRecipeRegistry {
                     newRecipe.setNewOutput(Arrays.asList(oldRecipe.getRecipeOutput()));
 
                     //logger.info("{} swapped with {}",oldIngredient.toString(), newIngredient.toString());
+
+                    //place back into list
+                    ModCraftingManager.updateRecipe(entityPlayer, craftingBlock, oldRecipe,oldIndex );
+                    ModCraftingManager.updateRecipe(entityPlayer, craftingBlock, newRecipe, newIndex);
                 }
-                //place back into list
-                ModCraftingManager.updateRecipe(entityPlayer, craftingBlock, oldRecipe,oldIndex );
-                ModCraftingManager.updateRecipe(entityPlayer, craftingBlock, newRecipe, newIndex);
             }
         }
     }
